@@ -1,5 +1,35 @@
 # Svelte library
 
+## Android APK preview (Capacitor)
+
+The Android build bundles the Svelte UI into the APK. SvelteKit's API and MongoDB
+remain on a server; they are not bundled into the app.
+
+1. Install Android Studio, including its Android SDK and JDK.
+2. Copy `.env.capacitor.example` to `.env.capacitor`. Set `VITE_API_BASE_URL` to
+   the HTTPS URL of the deployed SvelteKit server if you want login to work.
+   This URL is public and will be included in the APK; do not put secrets here.
+3. Build the bundled UI and sync it to Android:
+
+   ```sh
+   bun run build:android
+   ```
+
+4. Open the Android project:
+
+   ```sh
+   bun run android:open
+   ```
+
+5. In Android Studio, select a device or emulator and press **Run**. Android
+   Studio can also generate a debug APK from **Build > Build Bundle(s) / APK(s)
+   > Build APK(s)**.
+
+The APK can display the bundled UI without an API deployment, but login needs
+the server URL above and the API must allow requests from the Capacitor app.
+Regular `bun run build` continues to use the server adapter; only
+`bun run build:capacitor` creates the static Capacitor build.
+
 Everything you need to build a Svelte library, powered by [`sv`](https://npmjs.com/package/sv).
 
 Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).

@@ -6,15 +6,22 @@
 	import { normalizePhoneNumber } from "../../lib/utils/clients-utils";
 	import {
 		loadingMask,
-		setLoadingMask,
 		loadLanguage,
+		setLoadingMask,
+		showToast,
 		translations,
 	} from "../../stores";
 
 	onMount(loadLanguage);
 
+	const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+
 	const submitLogin = async (phone: string, password: string) => {
-		const res = await fetch("/api/login", {
+		if (import.meta.env.MODE === "capacitor" && !apiBaseUrl) {
+			throw new Error($translations.apiNotConfigured);
+		}
+
+		const res = await fetch(`${apiBaseUrl}/api/login`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -41,6 +48,10 @@
 				setLoadingMask(true);
 				await submitLogin(phone, values.password);
 			} catch (error) {
+				showToast(
+					error instanceof Error ? error.message : $translations.loginFailed,
+					"error",
+				);
 			} finally {
 				setLoadingMask(false);
 			}

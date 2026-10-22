@@ -20,7 +20,7 @@ const importSortingRules = {
 
 export default [
 	{
-		ignores: ['**/.svelte-kit/**', '**/node_modules/**']
+		ignores: ['**/.svelte-kit/**', '**/node_modules/**', '**/build/**', '**/android/**']
 	},
 	{
 		files: ['**/*.{js,ts}'],

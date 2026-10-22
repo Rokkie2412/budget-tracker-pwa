@@ -27,6 +27,7 @@ const translations = {
     showPassword: "Tampilkan",
     hidePassword: "Sembunyikan",
     loginFailed: "Gagal masuk.",
+    apiNotConfigured: "URL API belum dikonfigurasi untuk aplikasi ini.",
     loading: "Memuat...",
   },
   en: {
@@ -57,6 +58,7 @@ const translations = {
     showPassword: "Show",
     hidePassword: "Hide",
     loginFailed: "Login failed.",
+    apiNotConfigured: "The API URL is not configured for this app.",
     loading: "Loading...",
   },
 } as const;
