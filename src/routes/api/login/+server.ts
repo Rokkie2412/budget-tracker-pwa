@@ -1,52 +1,59 @@
-import UserConnected from "../../../models/user-list";
-import type { IUserConnected } from "../../../types";
-import { connectDataBase, getJwtSecretKey } from '../../../lib/utils'
-import { compare } from "bcrypt-ts";
-import { SignJWT } from "jose";
-import { json } from '@sveltejs/kit';
+import { json, type RequestHandler } from '@sveltejs/kit';
+import { compare } from 'bcrypt-ts';
+import { SignJWT } from 'jose';
 
-export const POST = async (request: Request): Promise<Response> => {
+import { connectDataBase, getJwtSecretKey } from '../../../lib/utils/index.server';
+import UserConnected from '../../../models/user-list';
+
+export const POST: RequestHandler = async ({ request }) => {
+  let body: unknown;
+
+  try {
+    body = await request.json();
+  } catch {
+    return json({ message: 'Request body must be valid JSON.' }, { status: 400 });
+  }
+
+  if (
+    typeof body !== 'object' ||
+    body === null ||
+    !('phone' in body) ||
+    !('password' in body) ||
+    typeof body.phone !== 'string' ||
+    typeof body.password !== 'string' ||
+    !body.phone.trim() ||
+    !body.password
+  ) {
+    return json({ message: 'Phone number and password are required.' }, { status: 400 });
+  }
+
   try {
     await connectDataBase();
 
-    const body: IUserConnected = await request.json();
-    const { userId, password } = body;
-
-    if (!userId || typeof userId !== "string" || !password || typeof password !== "string") {
-      return Response.json({ message: "userId and password are required." }, { status: 400 });
-    }
-
-    const user: IUserConnected | null = await UserConnected.findOne({
-      userId: userId.trim(),
+    const user = await UserConnected.findOne({
+      userId: body.phone.trim()
     });
 
-    if (!user) {
-      return Response.json({ message: "User not found." }, { status: 404 });
-    }
+    if (!user || !(await compare(body.password, user.password))) {
+      console.log('USER', user);
 
-    const isPasswordValid = await compare(password, user.password);
-    if (!isPasswordValid) {
-      return Response.json({ message: "Invalid password." }, { status: 401 });
+      return json({ message: 'Invalid phone number or password.' }, { status: 401 });
     }
 
     const secretKey = getJwtSecretKey();
     const token = await new SignJWT({ userId: user.userId })
-      .setProtectedHeader({ alg: "HS256" })
+      .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .sign(secretKey);
 
-    return Response.json({
-      message: "Login successfully.",
+    return json({
+      message: 'Login successfully.',
       token,
       user: {
-        userId: user.userId,
-      },
+        userId: user.userId
+      }
     });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
-    return Response.json(
-      { message: "An error occurred on the server.", error: errorMessage },
-      { status: 500 },
-    );
+    return json({ message: 'An error occurred on the server.' }, { status: 500 });
   }
 };

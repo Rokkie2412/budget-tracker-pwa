@@ -1,7 +1,9 @@
-import { writable, get } from "svelte/store";
+import { derived, get, writable } from "svelte/store";
+
 import Translation, { type Language, type TranslationKeys } from "../i18n";
 
-export const language = writable<Language>("id");
+export const language = writable<Language>("en");
+export const translations = derived(language, (lang) => Translation[lang]);
 
 export const setLanguage = (lang: Language): void => {
   language.set(lang);

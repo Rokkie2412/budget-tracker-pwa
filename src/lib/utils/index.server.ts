@@ -1,7 +1,7 @@
 import mongoose, { Mongoose } from "mongoose";
 
-import { MONGO_URI_DEV, MONGO_URI_PROD, ENCRYPTION_KEY } from '$app/env/private';
 import { dev } from '$app/env';
+import { ENCRYPTION_KEY, MONGO_URI_DEV, MONGO_URI_PROD } from '$app/env/private';
 
 interface MongooseCache {
   conn: Mongoose | null;

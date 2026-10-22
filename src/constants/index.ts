@@ -1,5 +1,4 @@
 import type { CountryCode } from "../types";
-
 import { EXPENSE_KEYWORD_MAP } from "./expenseKeyword";
 import { INCOME_KEYWORD_MAP } from "./incomeKeyword";
 

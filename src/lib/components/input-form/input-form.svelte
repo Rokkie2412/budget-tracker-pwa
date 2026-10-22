@@ -1,19 +1,24 @@
 <script lang="ts">
 	import {
+		type CountryCode,
 		getCountries,
 		getCountryCallingCode,
-		type CountryCode,
 	} from "libphonenumber-js";
+
+	import { language, translations } from "../../../stores/translation";
 	import type { Props } from "./input-form.types";
 
-	const countryNames = new Intl.DisplayNames(["en"], { type: "region" });
-	const countries = getCountries()
-		.map((code) => ({
-			code,
-			name: countryNames.of(code) ?? code,
-			dialCode: getCountryCallingCode(code),
-		}))
-		.sort((a, b) => a.name.localeCompare(b.name));
+	const countries = $derived.by(() => {
+		const countryNames = new Intl.DisplayNames([$language], { type: "region" });
+
+		return getCountries()
+			.map((code) => ({
+				code,
+				name: countryNames.of(code) ?? code,
+				dialCode: getCountryCallingCode(code),
+			}))
+			.sort((a, b) => a.name.localeCompare(b.name));
+	});
 
 	let {
 		id,
@@ -65,7 +70,10 @@
 			<button
 				type="button"
 				class="flex h-full shrink-0 items-center gap-2 border-r border-base-300 pr-2"
-				aria-label={`Choose country, current calling code +${selectedCountry.dialCode}`}
+				aria-label={$translations.currentCallingCode.replace(
+					"{code}",
+					selectedCountry.dialCode,
+				)}
 				onclick={() => countryDialog?.showModal()}
 			>
 				<span class={`fi fi-${selectedCountry.code.toLowerCase()} rounded-sm`}
@@ -103,7 +111,7 @@
 				class="btn btn-ghost btn-xs text-base-content/60"
 				onclick={() => (showPassword = !showPassword)}
 			>
-				{showPassword ? "Hide" : "Show"}
+				{showPassword ? $translations.hidePassword : $translations.showPassword}
 			</button>
 		{/if}
 	</div>
@@ -122,12 +130,12 @@
 					class="flex items-center justify-between border-b border-base-200 pb-3"
 				>
 					<h2 id={`${id}-country-title`} class="text-lg font-semibold">
-						Select country code
+						{$translations.chooseCountry}
 					</h2>
 					<button
 						type="button"
 						class="btn btn-ghost btn-sm btn-square"
-						aria-label="Close country selector"
+						aria-label={$translations.closeCountrySelector}
 						onclick={closeCountryDialog}
 					>
 						<svg

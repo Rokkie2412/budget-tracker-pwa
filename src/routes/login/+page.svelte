@@ -1,28 +1,68 @@
 <script lang="ts">
-	import { InputForm } from "../../lib/components";
 	import { createForm } from "felte";
+	import { onMount } from "svelte";
+
+	import { InputForm, LoadingMask } from "../../lib/components";
+	import { normalizePhoneNumber } from "../../lib/utils/clients-utils";
+	import {
+		loadingMask,
+		setLoadingMask,
+		loadLanguage,
+		translations,
+	} from "../../stores";
+
+	onMount(loadLanguage);
+
+	const submitLogin = async (phone: string, password: string) => {
+		const res = await fetch("/api/login", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				phone,
+				password,
+			}),
+		});
+
+		const result = await res.json();
+		if (!res.ok) {
+			throw new Error(result.message ?? $translations.loginFailed);
+		}
+
+		return result;
+	};
 
 	const { form } = createForm({
-		onSubmit: (values) => {
-			console.log("VALUES", values);
+		onSubmit: async (values) => {
+			const phone = normalizePhoneNumber(values.phone, values.phoneCallingCode);
+
+			try {
+				setLoadingMask(true);
+				await submitLogin(phone, values.password);
+			} catch (error) {
+			} finally {
+				setLoadingMask(false);
+			}
 		},
 	});
 
-	function handleSubmit(event: SubmitEvent) {
+	const handleSubmit = (event: SubmitEvent) => {
 		event.preventDefault();
-	}
+	};
 </script>
 
 <svelte:head>
-	<title>Sign in | Dompet</title>
-	<meta
-		name="description"
-		content="Sign in to Dompet and get a clearer picture of your personal finances."
-	/>
+	<title>{$translations.loginTitle}</title>
+	<meta name="description" content={$translations.loginDescription} />
 	<meta name="theme-color" content="#f4f4f5" />
 </svelte:head>
 
 <main data-theme="light" class="min-h-dvh bg-zinc-100">
+	{#if $loadingMask}
+		<LoadingMask text={$translations.loading} />
+	{/if}
+
 	<!-- HEADER -->
 	<article
 		class="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-white shadow-xl shadow-zinc-900/5"
@@ -33,7 +73,7 @@
 			<a
 				href="/login"
 				class="relative flex w-fit items-center gap-2.5"
-				aria-label="Dompet home"
+				aria-label={$translations.homeLabel}
 			>
 				<span
 					class="grid size-10 place-items-center rounded-xl bg-zinc-100 text-zinc-900"
@@ -59,26 +99,19 @@
 						/>
 					</svg>
 				</span>
-				<span class="text-lg font-bold tracking-tight">DOMPET TRACKER</span>
+				<span class="text-lg font-bold tracking-tight"
+					>{$translations.brandName}</span
+				>
 			</a>
 
 			<section class="relative mt-8" aria-labelledby="welcome-heading">
 				<p class="text-xs font-semibold tracking-[0.16em] text-zinc-300">
-					YOUR MONEY, IN BALANCE
-				</p>
-				<h1
-					id="welcome-heading"
-					class="mt-3 max-w-xs text-3xl font-semibold leading-tight tracking-tight"
-				>
-					Good to see you again.
-				</h1>
-				<p class="mt-2 max-w-xs text-sm leading-6 text-zinc-300">
-					Sign in to pick up where you left off.
+					{$translations.tagline}
 				</p>
 			</section>
 
 			<aside
-				aria-label="Dompet benefit"
+				aria-label={$translations.benefitLabel}
 				class="relative mt-6 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/8 p-4"
 			>
 				<span
@@ -102,10 +135,10 @@
 				</span>
 				<section aria-labelledby="benefit-heading">
 					<h2 id="benefit-heading" class="text-sm font-semibold">
-						A clearer picture starts here
+						{$translations.benefitTitle}
 					</h2>
 					<p class="mt-0.5 text-xs text-zinc-300">
-						Your finances, all in one place.
+						{$translations.benefitDescription}
 					</p>
 				</section>
 			</aside>
@@ -117,34 +150,35 @@
 		>
 			<header class="mb-6">
 				<h2 class="text-2xl font-bold tracking-tight text-base-content">
-					Sign in
+					{$translations.signIn}
 				</h2>
 				<p class="mt-1.5 text-sm text-base-content/60">
-					Enter your details to access your account.
+					{$translations.signInDescription}
 				</p>
 			</header>
 
 			<form use:form class="space-y-5" onsubmit={handleSubmit}>
 				<InputForm
 					id="phone"
-					label="Phone number"
+					label={$translations.phoneNumber}
 					name="phone"
-					placeholder="Enter your phone number"
+					placeholder={$translations.phonePlaceholder}
 					showNumberDropdown
 				/>
 				<InputForm
 					id="password"
-					label="Password"
+					label={$translations.password}
 					name="password"
-					placeholder="Enter your password"
+					placeholder={$translations.passwordPlaceholder}
 					showPasswordToggle
 				/>
 
 				<section
-					aria-label="Sign-in options"
+					aria-label={$translations.signInOptions}
 					class="flex items-center justify-end gap-3"
 				>
-					<span class="text-sm font-medium text-zinc-900">Forgot password?</span
+					<span class="text-sm font-medium text-zinc-900"
+						>{$translations.forgotPassword}</span
 					>
 				</section>
 
@@ -152,7 +186,7 @@
 					type="submit"
 					class="btn h-12 w-full rounded-xl border-zinc-900 bg-zinc-900 text-base font-semibold text-white hover:border-zinc-800 hover:bg-zinc-800"
 				>
-					Sign in
+					{$translations.signIn}
 					<svg
 						aria-hidden="true"
 						xmlns="http://www.w3.org/2000/svg"
@@ -171,8 +205,9 @@
 				</button>
 
 				<p class="text-center text-sm text-base-content/60">
-					New to Dompet? <span class="font-semibold text-zinc-900"
-						>Create an account</span
+					{$translations.newToDompet}
+					<span class="font-semibold text-zinc-900"
+						>{$translations.createAccount}</span
 					>
 				</p>
 			</form>
@@ -181,7 +216,7 @@
 			<footer
 				class="mt-auto pt-8 text-center text-xs leading-5 text-base-content/50"
 			>
-				Your financial information stays private and secure.
+				{$translations.privacyNotice}
 			</footer>
 		</section>
 	</article>
