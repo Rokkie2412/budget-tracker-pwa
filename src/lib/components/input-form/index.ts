@@ -1,1 +1,1 @@
-export { default as InputForm } from "./input-form.svelte";
+export { default } from "./input-form.svelte";

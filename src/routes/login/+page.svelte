@@ -2,51 +2,21 @@
 	import { createForm } from "felte";
 	import { onMount } from "svelte";
 
+	import { goto } from "$app/navigation";
+
 	import { InputForm, LoadingMask } from "../../lib/components";
+	import { setAuth } from "../../lib/services/auth";
+	import { loadingMask, setLoadingMask, showToast, t } from "../../stores";
 	import {
-		apiBaseUrl,
+		autoRouting,
+		handleSubmit,
+		keyErrorMapper,
 		normalizePhoneNumber,
-	} from "../../lib/utils/clients-utils";
-	import {
-		loadingMask,
-		loadLanguage,
-		setLoadingMask,
-		showToast,
-		t,
-	} from "../../stores";
+		onSubmitLogin,
+	} from "./login.handlers";
+	import type { LoginRes } from "./login.types";
 
-	onMount(loadLanguage);
-
-	const errorMappper: Record<string, string> = {
-		PHONE_AND_PASSWORD_REQUIRED: t("phoneAndPasswordRequired"),
-		INVALID_CREDENTIALS: t("invalidCredentials"),
-		SERVER_ERROR: t("serverError"),
-		REQUEST_BODY_MUST_BE_VALID_JSON: t("requestBodyMustBeValidJson"),
-	};
-
-	const submitLogin = async (phone: string, password: string) => {
-		if (import.meta.env.MODE === "capacitor" && !apiBaseUrl) {
-			throw new Error(t("apiNotConfigured"));
-		}
-
-		const res = await fetch(`${apiBaseUrl}/api/login`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				phone,
-				password,
-			}),
-		});
-
-		const result = await res.json();
-		if (!res.ok) {
-			throw new Error(result.message ?? t("loginFailed"));
-		}
-
-		return result;
-	};
+	onMount(autoRouting);
 
 	const { form } = createForm({
 		onSubmit: async (values) => {
@@ -54,23 +24,22 @@
 
 			try {
 				setLoadingMask(true);
-				const login = await submitLogin(phone, values.password);
+				const login: LoginRes = await onSubmitLogin(phone, values.password);
 				const message = login.message;
-				showToast(errorMappper[message] ?? t("loginSuccess"), "success");
+
+				await setAuth(login.token, login.user.userId);
+				showToast(keyErrorMapper[message] ?? t("loginSuccess"), "success");
+				await goto("/dashboard");
 			} catch (error: unknown) {
 				const message =
 					error instanceof Error ? error.message : t("loginFailed");
 
-				showToast(errorMappper[message] ?? t("loginFailed"), "error");
+				showToast(keyErrorMapper[message] ?? t("loginFailed"), "error");
 			} finally {
 				setLoadingMask(false);
 			}
 		},
 	});
-
-	const handleSubmit = (event: SubmitEvent) => {
-		event.preventDefault();
-	};
 </script>
 
 <svelte:head>
@@ -84,10 +53,10 @@
 		<LoadingMask text={t("loading")} />
 	{/if}
 
-	<!-- HEADER -->
 	<article
 		class="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-white shadow-xl shadow-zinc-900/5"
 	>
+		<!-- HEADER -->
 		<header
 			class="relative overflow-hidden rounded-b-4xl bg-zinc-900 px-6 pb-8 pt-[max(1.5rem,env(safe-area-inset-top))] text-white"
 		>
