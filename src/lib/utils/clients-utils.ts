@@ -8,3 +8,8 @@ export const normalizePhoneNumber = (phone: string, phoneCallingCode: string): s
 
 	return phoneCallingCode + nationalNumber.replace(/^0+/, '');
 };
+
+export const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").replace(
+	/\/$/,
+	"",
+);

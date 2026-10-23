@@ -3,22 +3,30 @@
 	import { onMount } from "svelte";
 
 	import { InputForm, LoadingMask } from "../../lib/components";
-	import { normalizePhoneNumber } from "../../lib/utils/clients-utils";
+	import {
+		apiBaseUrl,
+		normalizePhoneNumber,
+	} from "../../lib/utils/clients-utils";
 	import {
 		loadingMask,
 		loadLanguage,
 		setLoadingMask,
 		showToast,
-		translations,
+		t,
 	} from "../../stores";
 
 	onMount(loadLanguage);
 
-	const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+	const errorMappper: Record<string, string> = {
+		PHONE_AND_PASSWORD_REQUIRED: t("phoneAndPasswordRequired"),
+		INVALID_CREDENTIALS: t("invalidCredentials"),
+		SERVER_ERROR: t("serverError"),
+		REQUEST_BODY_MUST_BE_VALID_JSON: t("requestBodyMustBeValidJson"),
+	};
 
 	const submitLogin = async (phone: string, password: string) => {
 		if (import.meta.env.MODE === "capacitor" && !apiBaseUrl) {
-			throw new Error($translations.apiNotConfigured);
+			throw new Error(t("apiNotConfigured"));
 		}
 
 		const res = await fetch(`${apiBaseUrl}/api/login`, {
@@ -34,7 +42,7 @@
 
 		const result = await res.json();
 		if (!res.ok) {
-			throw new Error(result.message ?? $translations.loginFailed);
+			throw new Error(result.message ?? t("loginFailed"));
 		}
 
 		return result;
@@ -46,12 +54,14 @@
 
 			try {
 				setLoadingMask(true);
-				await submitLogin(phone, values.password);
-			} catch (error) {
-				showToast(
-					error instanceof Error ? error.message : $translations.loginFailed,
-					"error",
-				);
+				const login = await submitLogin(phone, values.password);
+				const message = login.message;
+				showToast(errorMappper[message] ?? t("loginSuccess"), "success");
+			} catch (error: unknown) {
+				const message =
+					error instanceof Error ? error.message : t("loginFailed");
+
+				showToast(errorMappper[message] ?? t("loginFailed"), "error");
 			} finally {
 				setLoadingMask(false);
 			}
@@ -64,14 +74,14 @@
 </script>
 
 <svelte:head>
-	<title>{$translations.loginTitle}</title>
-	<meta name="description" content={$translations.loginDescription} />
+	<title>{t("loginTitle")}</title>
+	<meta name="description" content={t("loginDescription")} />
 	<meta name="theme-color" content="#f4f4f5" />
 </svelte:head>
 
 <main data-theme="light" class="min-h-dvh bg-zinc-100">
 	{#if $loadingMask}
-		<LoadingMask text={$translations.loading} />
+		<LoadingMask text={t("loading")} />
 	{/if}
 
 	<!-- HEADER -->
@@ -84,7 +94,7 @@
 			<a
 				href="/login"
 				class="relative flex w-fit items-center gap-2.5"
-				aria-label={$translations.homeLabel}
+				aria-label={t("homeLabel")}
 			>
 				<span
 					class="grid size-10 place-items-center rounded-xl bg-zinc-100 text-zinc-900"
@@ -110,19 +120,17 @@
 						/>
 					</svg>
 				</span>
-				<span class="text-lg font-bold tracking-tight"
-					>{$translations.brandName}</span
-				>
+				<span class="text-lg font-bold tracking-tight">{t("brandName")}</span>
 			</a>
 
 			<section class="relative mt-8" aria-labelledby="welcome-heading">
 				<p class="text-xs font-semibold tracking-[0.16em] text-zinc-300">
-					{$translations.tagline}
+					{t("tagline")}
 				</p>
 			</section>
 
 			<aside
-				aria-label={$translations.benefitLabel}
+				aria-label={t("benefitLabel")}
 				class="relative mt-6 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/8 p-4"
 			>
 				<span
@@ -146,10 +154,10 @@
 				</span>
 				<section aria-labelledby="benefit-heading">
 					<h2 id="benefit-heading" class="text-sm font-semibold">
-						{$translations.benefitTitle}
+						{t("benefitTitle")}
 					</h2>
 					<p class="mt-0.5 text-xs text-zinc-300">
-						{$translations.benefitDescription}
+						{t("benefitDescription")}
 					</p>
 				</section>
 			</aside>
@@ -161,35 +169,35 @@
 		>
 			<header class="mb-6">
 				<h2 class="text-2xl font-bold tracking-tight text-base-content">
-					{$translations.signIn}
+					{t("signIn")}
 				</h2>
 				<p class="mt-1.5 text-sm text-base-content/60">
-					{$translations.signInDescription}
+					{t("signInDescription")}
 				</p>
 			</header>
 
 			<form use:form class="space-y-5" onsubmit={handleSubmit}>
 				<InputForm
 					id="phone"
-					label={$translations.phoneNumber}
+					label={t("phoneNumber")}
 					name="phone"
-					placeholder={$translations.phonePlaceholder}
+					placeholder={t("phonePlaceholder")}
 					showNumberDropdown
 				/>
 				<InputForm
 					id="password"
-					label={$translations.password}
+					label={t("password")}
 					name="password"
-					placeholder={$translations.passwordPlaceholder}
+					placeholder={t("passwordPlaceholder")}
 					showPasswordToggle
 				/>
 
 				<section
-					aria-label={$translations.signInOptions}
+					aria-label={t("signInOptions")}
 					class="flex items-center justify-end gap-3"
 				>
 					<span class="text-sm font-medium text-zinc-900"
-						>{$translations.forgotPassword}</span
+						>{t("forgotPassword")}</span
 					>
 				</section>
 
@@ -197,7 +205,7 @@
 					type="submit"
 					class="btn h-12 w-full rounded-xl border-zinc-900 bg-zinc-900 text-base font-semibold text-white hover:border-zinc-800 hover:bg-zinc-800"
 				>
-					{$translations.signIn}
+					{t("signIn")}
 					<svg
 						aria-hidden="true"
 						xmlns="http://www.w3.org/2000/svg"
@@ -216,10 +224,8 @@
 				</button>
 
 				<p class="text-center text-sm text-base-content/60">
-					{$translations.newToDompet}
-					<span class="font-semibold text-zinc-900"
-						>{$translations.createAccount}</span
-					>
+					{t("newToDompet")}
+					<span class="font-semibold text-zinc-900">{t("createAccount")}</span>
 				</p>
 			</form>
 
@@ -227,7 +233,7 @@
 			<footer
 				class="mt-auto pt-8 text-center text-xs leading-5 text-base-content/50"
 			>
-				{$translations.privacyNotice}
+				{t("privacyNotice")}
 			</footer>
 		</section>
 	</article>

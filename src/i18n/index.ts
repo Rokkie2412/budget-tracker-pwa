@@ -26,9 +26,14 @@ const translations = {
     closeCountrySelector: "Tutup pilihan negara",
     showPassword: "Tampilkan",
     hidePassword: "Sembunyikan",
-    loginFailed: "Gagal masuk.",
+    loginFailed: "Gagal masuk, coba lagi nanti.",
     apiNotConfigured: "URL API belum dikonfigurasi untuk aplikasi ini.",
     loading: "Memuat...",
+    phoneAndPasswordRequired: "Nomor telepon dan kata sandi diperlukan.",
+    invalidCredentials: "Nomor telepon atau kata sandi tidak valid.",
+    serverError: "Terjadi kesalahan pada server.",
+    requestBodyMustBeValidJson: "Permintaan tidak valid.",
+    loginSuccess: 'Berhasil masuk'
   },
   en: {
     welcome: "Welcome",
@@ -57,9 +62,14 @@ const translations = {
     closeCountrySelector: "Close country selector",
     showPassword: "Show",
     hidePassword: "Hide",
-    loginFailed: "Login failed.",
+    loginFailed: "Login failed, please try again later.",
     apiNotConfigured: "The API URL is not configured for this app.",
     loading: "Loading...",
+    phoneAndPasswordRequired: "Phone number and password are required.",
+    invalidCredentials: "Invalid phone number or password.",
+    serverError: "An error occurred on the server.",
+    requestBodyMustBeValidJson: "Request body must be valid JSON.",
+    loginSuccess: 'Login success'
   },
 } as const;
 

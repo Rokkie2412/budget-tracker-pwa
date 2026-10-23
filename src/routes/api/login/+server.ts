@@ -11,7 +11,7 @@ export const POST: RequestHandler = async ({ request }) => {
   try {
     body = await request.json();
   } catch {
-    return json({ message: 'Request body must be valid JSON.' }, { status: 400 });
+    return json({ message: 'REQUEST_BODY_MUST_BE_VALID_JSON' }, { status: 400 });
   }
 
   if (
@@ -24,7 +24,7 @@ export const POST: RequestHandler = async ({ request }) => {
     !body.phone.trim() ||
     !body.password
   ) {
-    return json({ message: 'Phone number and password are required.' }, { status: 400 });
+    return json({ message: 'PHONE_AND_PASSWORD_REQUIRED' }, { status: 400 });
   }
 
   try {
@@ -37,7 +37,7 @@ export const POST: RequestHandler = async ({ request }) => {
     if (!user || !(await compare(body.password, user.password))) {
       console.log('USER', user);
 
-      return json({ message: 'Invalid phone number or password.' }, { status: 401 });
+      return json({ message: 'INVALID_CREDENTIALS' }, { status: 401 });
     }
 
     const secretKey = getJwtSecretKey();
@@ -47,13 +47,13 @@ export const POST: RequestHandler = async ({ request }) => {
       .sign(secretKey);
 
     return json({
-      message: 'Login successfully.',
+      message: 'LOGIN_SUCCESS',
       token,
       user: {
         userId: user.userId
       }
     });
   } catch (error: unknown) {
-    return json({ message: 'An error occurred on the server.' }, { status: 500 });
+    return json({ message: 'SERVER_ERROR' }, { status: 500 });
   }
 };
