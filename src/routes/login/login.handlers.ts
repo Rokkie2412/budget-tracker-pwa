@@ -14,14 +14,6 @@ export const keyErrorMapper: Record<string, string> = {
   REQUEST_BODY_MUST_BE_VALID_JSON: t("requestBodyMustBeValidJson"),
 };
 
-export const autoRouting = async () => {
-  const auth = await checkAuth();
-
-  if (auth) {
-    goto('/dashboard')
-  }
-}
-
 export const onSubmitLogin = async (phone: string, password: string) => {
   if (import.meta.env.MODE === "capacitor" && !apiBaseUrl) {
     throw new Error(t("apiNotConfigured"));

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { createForm } from "felte";
-	import { onMount } from "svelte";
 
 	import { goto } from "$app/navigation";
 
@@ -8,15 +7,12 @@
 	import { setAuth } from "../../lib/services/auth";
 	import { loadingMask, setLoadingMask, showToast, t } from "../../stores";
 	import {
-		autoRouting,
 		handleSubmit,
 		keyErrorMapper,
 		normalizePhoneNumber,
 		onSubmitLogin,
 	} from "./login.handlers";
 	import type { LoginRes } from "./login.types";
-
-	onMount(autoRouting);
 
 	const { form } = createForm({
 		onSubmit: async (values) => {

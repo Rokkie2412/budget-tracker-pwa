@@ -1,3 +1,5 @@
+import { language } from "../stores";
+
 const translations = {
   id: {
     welcome: "Selamat Datang",
@@ -33,7 +35,11 @@ const translations = {
     invalidCredentials: "Nomor telepon atau kata sandi tidak valid.",
     serverError: "Terjadi kesalahan pada server.",
     requestBodyMustBeValidJson: "Permintaan tidak valid.",
-    loginSuccess: 'Berhasil masuk'
+    loginSuccess: 'Berhasil masuk',
+    numberTeL: 'Nomor Telepon',
+    allowChatLabel: 'Feature Chat WhatsApp',
+    languageLabel: 'Bahasa',
+    logOutButtonLabel: 'Keluar'
   },
   en: {
     welcome: "Welcome",
@@ -69,7 +75,11 @@ const translations = {
     invalidCredentials: "Invalid phone number or password.",
     serverError: "An error occurred on the server.",
     requestBodyMustBeValidJson: "Request body must be valid JSON.",
-    loginSuccess: 'Login success'
+    loginSuccess: 'Login success',
+    numberTeL: 'Phone Number',
+    allowChatLabel: "Chat Feature WhatsApp",
+    languageLabel: 'Language',
+    logOutButtonLabel: 'Log Out'
   },
 } as const;
 

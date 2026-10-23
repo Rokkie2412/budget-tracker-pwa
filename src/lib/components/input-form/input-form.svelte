@@ -5,7 +5,7 @@
 		getCountryCallingCode,
 	} from "libphonenumber-js";
 
-	import { language, translations } from "../../../stores/translation";
+	import { language, t } from "../../../stores/translation";
 	import type { Props } from "./input-form.types";
 
 	const countries = $derived.by(() => {
@@ -70,7 +70,7 @@
 			<button
 				type="button"
 				class="flex h-full shrink-0 items-center gap-2 border-r border-base-300 pr-2"
-				aria-label={$translations.currentCallingCode.replace(
+				aria-label={t("currentCallingCode", $language).replace(
 					"{code}",
 					selectedCountry.dialCode,
 				)}
@@ -111,7 +111,9 @@
 				class="btn btn-ghost btn-xs text-base-content/60"
 				onclick={() => (showPassword = !showPassword)}
 			>
-				{showPassword ? $translations.hidePassword : $translations.showPassword}
+				{showPassword
+					? t("hidePassword", $language)
+					: t("showPassword", $language)}
 			</button>
 		{/if}
 	</div>
@@ -130,12 +132,12 @@
 					class="flex items-center justify-between border-b border-base-200 pb-3"
 				>
 					<h2 id={`${id}-country-title`} class="text-lg font-semibold">
-						{$translations.chooseCountry}
+						{t("chooseCountry", $language)}
 					</h2>
 					<button
 						type="button"
 						class="btn btn-ghost btn-sm btn-square"
-						aria-label={$translations.closeCountrySelector}
+						aria-label={t("closeCountrySelector", $language)}
 						onclick={closeCountryDialog}
 					>
 						<svg
