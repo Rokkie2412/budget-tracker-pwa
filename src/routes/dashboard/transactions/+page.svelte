@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { invalidate } from "$app/navigation";
   let { data } = $props();
 
   console.log("DATA", data);
