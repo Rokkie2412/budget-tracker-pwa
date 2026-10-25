@@ -17,14 +17,20 @@ export const handle: Handle = async ({ event, resolve }) => {
     return resolve(event);
   }
 
-  const authHeader = event.request.headers.get('authorization');
+  const authHeader = event.request.headers.get('Authorization');
   event.locals.user = null;
+
+  console.log('authHeader', authHeader);
+
 
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.substring(7);
     try {
       const secretKey = getJwtSecretKey();
+      console.log('secretKey', secretKey);
       const { payload } = await jwtVerify(token, secretKey);
+      console.log('payload', payload);
+
       event.locals.user = payload as AuthPayload;
     } catch {
       event.locals.user = null;

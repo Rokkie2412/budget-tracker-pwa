@@ -1,6 +1,3 @@
-import { goto } from "$app/navigation";
-
-import { checkAuth } from "../../lib/services/auth";
 import {
   apiBaseUrl
 } from "../../lib/utils";

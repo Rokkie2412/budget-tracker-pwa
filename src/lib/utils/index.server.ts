@@ -5,7 +5,7 @@ import { jwtVerify } from "jose";
 import mongoose, { Mongoose } from "mongoose";
 
 import { dev } from '$app/env';
-import { JWT_KEY, MONGO_URI_DEV, MONGO_URI_PROD, STATIC_SALT } from '$app/env/private';
+import { ENCRYPTION_KEY, JWT_KEY, MONGO_URI_DEV, MONGO_URI_PROD, STATIC_SALT } from '$app/env/private';
 
 import { ENC_ALGORITHM } from '@/constants'
 import type { AuthPayload} from '@/types'
@@ -83,7 +83,7 @@ export const getJwtSecretKey = (): Uint8Array => {
 
 export const encrypt = (text: string): string => {
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(ENC_ALGORITHM, Buffer.from(process.env.ENCRYPTION_KEY!), iv);
+  const cipher = crypto.createCipheriv(ENC_ALGORITHM, Buffer.from(ENCRYPTION_KEY), iv);
 
   let encrypted = cipher.update(text, 'utf8', 'hex');
   encrypted += cipher.final('hex');
@@ -97,7 +97,7 @@ export const decrypt = (text: string): string => {
     if (!ivHex || !encryptedText) return text;
 
     const iv = Buffer.from(ivHex, 'hex');
-    const decipher = crypto.createDecipheriv(ENC_ALGORITHM, Buffer.from(process.env.ENCRYPTION_KEY!), iv);
+    const decipher = crypto.createDecipheriv(ENC_ALGORITHM, Buffer.from(ENCRYPTION_KEY), iv);
 
     let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
