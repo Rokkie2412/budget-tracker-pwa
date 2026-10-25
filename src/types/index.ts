@@ -17,6 +17,18 @@ export type IUserConnected = {
   allowChat: boolean;
 }
 
+export type CategoryBreakdownItem<TCategory extends string> = {
+  category: TCategory;
+  total: number;
+  percentage: number;
+  count: number;
+}
+
+export type CategoryBreakdown = {
+  expenses: CategoryBreakdownItem<ExpenseCategory>[];
+  income: CategoryBreakdownItem<IncomeCategory>[];
+}
+
 export type ITransaction = {
   _id?: string;
   userId: string;
@@ -29,4 +41,74 @@ export type ITransaction = {
 
 export type AuthPayload = {
   userId: string;
+  phoneNumber: string
 }
+
+export type MonthSummary = {
+  total: number;
+  income: number;
+  outcome: number;
+};
+
+export type PaginationMeta = {
+  page: number;
+  limit: number;
+  totalTransactions: number;
+  totalPages: number;
+}
+
+export type MonthlyTransactionDetailData = MonthSummary & {
+  year: number;
+  month: number;
+  transactions: ITransaction[];
+  pagination: PaginationMeta;
+  categories: CategoryBreakdown;
+  lastMonth: MonthSummary;
+  comparison: MonthComparison;
+};
+
+export type MonthComparison = {
+  percentage: string | null;
+  status: "plus" | "minus" | null;
+};
+
+export type MonthlyTransactionDetailResponse = {
+  message: string;
+  data: MonthlyTransactionDetailData;
+};
+
+export type MonthlyReportItem = {
+  date: string;
+  income: number;
+  expense: number;
+  total: number;
+}
+
+export type MonthlyReportPaginationMeta = {
+  page: number;
+  limit: number;
+  totalMonths: number;
+  totalPages: number;
+}
+
+export type MonthlyReportPaginatedData = {
+  reports: MonthlyReportItem[];
+  pagination: MonthlyReportPaginationMeta;
+};
+
+export type MonthlyReportData = {
+  year: number;
+  month: number;
+  summary: {
+    total: number;
+    income: number;
+    expense: number;
+  };
+  categories: CategoryBreakdown;
+};
+
+export type MonthlyReportResponse = {
+  message: string;
+  data: MonthlyReportData;
+};
+
