@@ -5,4 +5,5 @@ export const variables = defineEnvVars({
   MONGO_URI_DEV: {},
   ENCRYPTION_KEY: {},
   STATIC_SALT: {},
+  JWT_KEY: {},
 });

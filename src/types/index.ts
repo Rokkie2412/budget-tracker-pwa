@@ -17,7 +17,7 @@ export type IUserConnected = {
   allowChat: boolean;
 }
 
-export interface ITransaction {
+export type ITransaction = {
   _id?: string;
   userId: string;
   amount: number;
@@ -25,4 +25,8 @@ export interface ITransaction {
   date: Date;
   type: "OUT" | "IN";
   category?: BudgetCategory;
+}
+
+export type AuthPayload = {
+  userId: string;
 }

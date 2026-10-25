@@ -1,6 +1,6 @@
 import { get, writable } from "svelte/store";
 
-import Translation, { type Language, type TranslationKeys } from "../i18n";
+import Translation, { type Language, type TranslationKeys } from "@/i18n";
 
 export const language = writable<Language>("en");
 

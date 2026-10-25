@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import adapterAuto from '@sveltejs/adapter-auto';
 import adapterStatic from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
@@ -5,6 +7,11 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig(({ mode }) => ({
+	resolve: {
+		alias: {
+			'@': path.resolve(__dirname, './src')
+		}
+	},
 	plugins: [
 		tailwindcss(),
 		sveltekit({

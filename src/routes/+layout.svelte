@@ -6,9 +6,9 @@
   import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
   import { page } from "$app/state";
 
-  import { ToastContainer } from "../lib/components";
-  import { checkAuth } from "../lib/services/auth";
-  import { loadLanguage } from "../stores";
+  import { ToastContainer } from "@/lib/components";
+  import { checkAuth } from "@/lib/services/auth";
+  import { loadLanguage } from "@/stores";
 
   let { children } = $props();
   let navigationCheck = 0;

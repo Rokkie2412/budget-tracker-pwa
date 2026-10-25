@@ -11,11 +11,12 @@ const importSortingRules = {
 				['^node:'],
 				['^@?\\w'],
 				['^\\$app/'],
-				['^#lib(?:/|$)', '^\\$lib(?:/|$)'],
+				['^@/', '^#lib(?:/|$)', '^\\$lib(?:/|$)'],
 				['^\\.']
 			]
 		}
-	]
+	],
+	'simple-import-sort/exports': 'error'
 };
 
 export default [
