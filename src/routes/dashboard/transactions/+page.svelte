@@ -1,155 +1,65 @@
 <script lang="ts">
-  import { invalidate } from "$app/navigation";
-  let { data } = $props();
+  import { TransactionCard } from "@/lib/components";
 
-  console.log("DATA", data);
+  import type { Props } from './transactions.types'
+
+  let { data }: Props = $props();
+  const transactions = $derived(data.transactions.data?.transactions ?? []);
+  const rupiah = new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  });
+
+  function formatDate(date: string) {
+    return new Intl.DateTimeFormat("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(new Date(date));
+  }
 </script>
 
-<ul class="list bg-base-100 rounded-box shadow-md">
-  <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">Transactions List :</li>
-
-  <li class="list-row">
-    <div>
-      <img
-        class="size-10 rounded-box"
-        alt="Tailwind CSS list item"
-        src="https://img.daisyui.com/images/profile/demo/1@94.webp"
-      />
-    </div>
-    <div>
-      <div>Dio Lupa</div>
-      <div class="text-xs uppercase font-semibold opacity-60">
-        Remaining Reason
+<main
+  data-theme="light"
+  class="flex h-[calc(100dvh-6rem)] min-h-0 flex-col overflow-hidden bg-zinc-100 px-4 pt-6 sm:px-6"
+>
+  <section class="mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col gap-5">
+    <header class="flex shrink-0 items-end justify-between gap-3">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+          Riwayat keuangan
+        </p>
+        <h1 class="mt-1 text-2xl font-bold text-zinc-900">Transaksi</h1>
       </div>
-    </div>
-    <button class="btn btn-square btn-ghost">
-      <svg
-        aria-label="Play"
-        class="size-[1.2em]"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        ><g
-          stroke-linejoin="round"
-          stroke-linecap="round"
-          stroke-width="2"
-          fill="none"
-          stroke="currentColor"><path d="M6 3L20 12 6 21 6 3z"></path></g
-        ></svg
-      >
-    </button>
-    <button class="btn btn-square btn-ghost">
-      <svg
-        aria-label="Favorite"
-        class="size-[1.2em]"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        ><g
-          stroke-linejoin="round"
-          stroke-linecap="round"
-          stroke-width="2"
-          fill="none"
-          stroke="currentColor"
-          ><path
-            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-          ></path></g
-        ></svg
-      >
-    </button>
-  </li>
+      <p class="pb-1 text-sm font-medium text-zinc-500">
+        {transactions.length} transaksi
+      </p>
+    </header>
 
-  <li class="list-row">
-    <div>
-      <img
-        class="size-10 rounded-box"
-        alt="Tailwind CSS list item"
-        src="https://img.daisyui.com/images/profile/demo/4@94.webp"
-      />
-    </div>
-    <div>
-      <div>Ellie Beilish</div>
-      <div class="text-xs uppercase font-semibold opacity-60">
-        Bears of a fever
+    {#if transactions.length > 0}
+      <div
+        class="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pb-4"
+        aria-label="Daftar transaksi"
+      >
+        {#each transactions as transaction (transaction._id)}
+          <TransactionCard
+            title={transaction.description}
+            subtitle={`${transaction.category ?? "Lainnya"} · ${formatDate(transaction.date)}`}
+            amount={`${transaction.type === "IN" ? "+" : "−"}${rupiah.format(transaction.amount)}`}
+            type={transaction.type}
+          />
+        {/each}
       </div>
-    </div>
-    <button class="btn btn-square btn-ghost">
-      <svg
-        aria-label="Play"
-        class="size-[1.2em]"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        ><g
-          stroke-linejoin="round"
-          stroke-linecap="round"
-          stroke-width="2"
-          fill="none"
-          stroke="currentColor"><path d="M6 3L20 12 6 21 6 3z"></path></g
-        ></svg
+    {:else}
+      <div
+        class="rounded-2xl border border-zinc-200 bg-white px-5 py-10 text-center shadow-sm"
       >
-    </button>
-    <button class="btn btn-square btn-ghost">
-      <svg
-        aria-label="Favorite"
-        class="size-[1.2em]"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        ><g
-          stroke-linejoin="round"
-          stroke-linecap="round"
-          stroke-width="2"
-          fill="none"
-          stroke="currentColor"
-          ><path
-            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-          ></path></g
-        ></svg
-      >
-    </button>
-  </li>
-
-  <li class="list-row">
-    <div>
-      <img
-        class="size-10 rounded-box"
-        alt="Tailwind CSS list item"
-        src="https://img.daisyui.com/images/profile/demo/3@94.webp"
-      />
-    </div>
-    <div>
-      <div>Sabrino Gardener</div>
-      <div class="text-xs uppercase font-semibold opacity-60">Cappuccino</div>
-    </div>
-    <button class="btn btn-square btn-ghost">
-      <svg
-        aria-label="Play"
-        class="size-[1.2em]"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        ><g
-          stroke-linejoin="round"
-          stroke-linecap="round"
-          stroke-width="2"
-          fill="none"
-          stroke="currentColor"><path d="M6 3L20 12 6 21 6 3z"></path></g
-        ></svg
-      >
-    </button>
-    <button class="btn btn-square btn-ghost">
-      <svg
-        aria-label="Favorite"
-        class="size-[1.2em]"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        ><g
-          stroke-linejoin="round"
-          stroke-linecap="round"
-          stroke-width="2"
-          fill="none"
-          stroke="currentColor"
-          ><path
-            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-          ></path></g
-        ></svg
-      >
-    </button>
-  </li>
-</ul>
+        <p class="font-semibold text-zinc-900">Belum ada transaksi</p>
+        <p class="mt-1 text-sm text-zinc-500">
+          Transaksi terbaru akan muncul di sini.
+        </p>
+      </div>
+    {/if}
+  </section>
+</main>
