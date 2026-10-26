@@ -1,4 +1,4 @@
-import { BUDGET_CATEGORIES_EXPENSE, BUDGET_CATEGORIES_INCOME } from "../constants";
+import { BUDGET_CATEGORIES_EXPENSE, BUDGET_CATEGORIES_INCOME, CATEGORY_EMOJIS_EXPENSE, CATEGORY_EMOJIS_INCOME } from "../constants";
 
 export type CountryCode = {
   flag: string;
@@ -112,3 +112,9 @@ export type MonthlyReportResponse = {
   data: MonthlyReportData;
 };
 
+export const ALL_CATEGORY_EMOJIS: Record<BudgetCategory | IncomeCategory, string> = {
+  ...CATEGORY_EMOJIS_EXPENSE,
+  ...CATEGORY_EMOJIS_INCOME,
+};
+
+export type Category = (typeof BUDGET_CATEGORIES_EXPENSE | typeof BUDGET_CATEGORIES_INCOME)[number];

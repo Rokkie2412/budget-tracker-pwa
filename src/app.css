@@ -1,4 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap');
 @import "tailwindcss";
 @import "flag-icons/css/flag-icons.min.css";
 
 @plugin "daisyui";
+
+@theme {
+  --font-sans: 'Figtree', sans-serif;
+}

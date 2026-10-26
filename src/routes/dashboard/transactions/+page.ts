@@ -1,9 +1,7 @@
 import { error } from '@sveltejs/kit';
 
-import { checkAuth } from '@/lib/services/auth'
-import {
-  apiBaseUrl
-} from "@/lib/utils";
+import { checkAuth } from '@/lib/services/auth';
+import { apiBaseUrl } from "@/lib/utils";
 
 import type { PageLoad } from './$types';
 
@@ -15,14 +13,31 @@ export const load: PageLoad = async ({ fetch, depends }) => {
   }
 
   const { jwtToken, phoneNumber } = authData;
-
   depends('app:transactions');
-  const res = await fetch(`${apiBaseUrl}/api/transactions-list?userId=${phoneNumber}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${jwtToken}`,
-    },
-  });
-  return { transactions: await res.json() };
+
+  try {
+    const res = await fetch(`${apiBaseUrl}/api/transactions-list?userId=${phoneNumber}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${jwtToken}`,
+      },
+    });
+
+    if (!res.ok) {
+      return { 
+        transactions: [], 
+        errorMessage: `Gagal mengambil data (${res.status})` 
+      };
+    }
+
+    const transactions = await res.json();
+    return { transactions, errorMessage: null };
+
+  } catch (err) {
+    return { 
+      transactions: [], 
+      errorMessage: "Terjadi kesalahan koneksi internet." 
+    };
+  }
 };

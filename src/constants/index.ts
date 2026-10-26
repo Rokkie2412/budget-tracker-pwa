@@ -117,3 +117,36 @@ export const COUNTRY_CODES: CountryCode[] = [
 ];
 
 export { EXPENSE_KEYWORD_MAP, INCOME_KEYWORD_MAP };
+
+export const CATEGORY_EMOJIS_EXPENSE: Record<typeof BUDGET_CATEGORIES_EXPENSE[number], string> = {
+  'Bills': '💡',
+  'Education': '🎓',
+  'Family Needs': '🏠',
+  'Food & Drinks': '🍔',
+  'Gift and Charity': '🎁',
+  'Groceries': '🛒',
+  'Health & Personal Care': '🏥',
+  'Hobby & Entertainment': '🎮',
+  'Loans': '💸',
+  'Lending & Receivables': '🤝',
+  'Saving & Investment': '📈',
+  'Shopping': '🛍️',
+  'Sports': '⚽',
+  'Transportation': '🚗',
+  'Traveling': '✈️',
+  'Debt': '💳',
+  'Other Expense': '📦',
+};
+
+export const CATEGORY_EMOJIS_INCOME: Record<typeof BUDGET_CATEGORIES_INCOME[number], string> = {
+  'Salary': '💵',
+  'Business & Profit': '📈',
+  'Freelance & Side Job': '💻',
+  'Investment & Dividend': '📊',
+  'Allowance & Gift': '🧧',
+  'Debt Repayment': '🤝',
+  'Bonus & Commission': '🎉',
+  'Rental Income': '🏘️',
+  'Refund & Cashback': '💸',
+  'Other Income': '📥',
+};
