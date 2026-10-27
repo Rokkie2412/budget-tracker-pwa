@@ -1,3 +1,4 @@
+export { default as AddTransaction } from './add-transaction/add-transaction.svelte'
 export { default as InitialProfile } from './initial-profile'
 export { default as InputForm } from './input-form'
 export { default as LoadingMask } from './loading-mask'

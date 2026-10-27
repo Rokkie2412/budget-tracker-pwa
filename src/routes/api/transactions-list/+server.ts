@@ -1,8 +1,9 @@
 import type { RequestHandler } from "@sveltejs/kit";
 
 import { BUDGET_CATEGORIES_EXPENSE, BUDGET_CATEGORIES_INCOME } from "@/constants";
-import { connectDataBase, decrypt, hashUserId } from "@/lib/utils/index.server";
+import { connectDataBase, decrypt, encrypt, hashUserId } from "@/lib/utils/index.server";
 import Transaction from "@/models/transaction-list";
+import type { Category } from "@/types";
 
 const ALL_CATEGORIES: readonly string[] = [
 	...BUDGET_CATEGORIES_EXPENSE,
@@ -185,6 +186,71 @@ export const DELETE: RequestHandler = async ({ locals, request }) => {
 		const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
 		return Response.json(
 			{ message: "An error occurred while deleting the transaction.", error: errorMessage },
+			{ status: 500 },
+		);
+	}
+};
+
+export const POST: RequestHandler = async ({ locals, request }) => {
+	const userId = locals.user?.userId?.trim();
+	if (!userId) {
+		return Response.json({ message: "Unauthorized" }, { status: 401 });
+	}
+
+	let body: unknown;
+	try {
+		body = await request.json();
+	} catch {
+		return Response.json({ message: "Request body must be valid JSON." }, { status: 400 });
+	}
+
+	if (typeof body !== "object" || body === null) {
+		return Response.json({ message: "Invalid transaction details." }, { status: 400 });
+	}
+
+	const { amount, description, type, category, date } = body as Record<string, unknown>;
+	const normalizedDescription = typeof description === "string" ? description.trim() : "";
+	const parsedDate = typeof date === "string" ? new Date(date) : new Date(Number.NaN);
+	const validCategories = type === "IN"
+		? BUDGET_CATEGORIES_INCOME
+		: type === "OUT"
+			? BUDGET_CATEGORIES_EXPENSE
+			: [];
+
+	if (
+		typeof amount !== "number" ||
+		!Number.isFinite(amount) ||
+		amount <= 0 ||
+		amount > 1_000_000_000_000 ||
+		normalizedDescription.length === 0 ||
+		normalizedDescription.length > 200 ||
+		!validCategories.includes(category as never) ||
+		Number.isNaN(parsedDate.getTime())
+	) {
+		return Response.json({ message: "Invalid transaction details." }, { status: 400 });
+	}
+	const transactionType = type as "IN" | "OUT";
+	const transactionCategory = category as Category;
+
+	try {
+		await connectDataBase();
+		await Transaction.create({
+			userId: hashUserId(userId),
+			amount,
+			description: encrypt(normalizedDescription),
+			date: parsedDate,
+			type: transactionType,
+			category: transactionCategory,
+		});
+
+		return Response.json(
+			{ message: "Transaction created." },
+			{ status: 201 },
+		);
+	} catch (error: unknown) {
+		const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
+		return Response.json(
+			{ message: "An error occurred while creating the transaction.", error: errorMessage },
 			{ status: 500 },
 		);
 	}

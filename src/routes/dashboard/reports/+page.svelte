@@ -1,8 +1,13 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { get } from "svelte/store";
+
+  import { goto } from "$app/navigation";
 
   import { getCategoryTranslationKey } from "@/i18n";
   import { fetchMonthlyReport } from "@/lib/services/monthly-report";
+  import { loadReportPeriod, reportPeriod, setReportPeriod } from "@/stores/report-period";
+  import { transactionRevision } from "@/stores/transactions-changed";
   import { language, t } from "@/stores/translation";
   import { ALL_CATEGORY_EMOJIS, type MonthlyReportData } from "@/types";
 
@@ -13,12 +18,13 @@
     maximumFractionDigits: 0,
   });
 
-  let year = $state(today.getFullYear());
-  let month = $state(today.getMonth() + 1);
+  let year = $derived($reportPeriod.year);
+  let month = $derived($reportPeriod.month);
   let report = $state<MonthlyReportData | null>(null);
   let isLoading = $state(true);
   let errorMessage = $state("");
   let requestSequence = 0;
+  let observedTransactionRevision = $transactionRevision;
 
   const monthDate = $derived(new Date(year, month - 1, 1));
   const monthLabel = $derived(
@@ -58,17 +64,26 @@
   };
 
   const changePeriod = (targetYear: number, targetMonth: number) => {
-    year = targetYear;
-    month = targetMonth;
+    setReportPeriod({ year: targetYear, month: targetMonth });
     void loadReport(targetYear, targetMonth);
   };
+
+  $effect(() => {
+    const revision = $transactionRevision;
+    if (revision === observedTransactionRevision) return;
+
+    observedTransactionRevision = revision;
+    void loadReport();
+  });
 
   const formatCurrency = (amount: number) => currency.format(amount);
   const formatCategory = (category: string) =>
     t(getCategoryTranslationKey(category as keyof typeof ALL_CATEGORY_EMOJIS), $language);
 
   onMount(() => {
-    void loadReport();
+    loadReportPeriod();
+    const period = get(reportPeriod);
+    void loadReport(period.year, period.month);
   });
 </script>
 
@@ -150,6 +165,17 @@
           </div>
         </div>
         </section>
+
+        <button
+          type="button"
+          class="btn btn-outline mb-5 w-full justify-between border-emerald-200 text-emerald-800"
+          onclick={() => goto("/dashboard/monthly-report-detail")}
+        >
+          {t("viewReportDetails", $language)}
+          <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14m-6-6 6 6-6 6" />
+          </svg>
+        </button>
 
         <section class="space-y-5" aria-label={t("reportsTitle", $language)}>
           {#each [

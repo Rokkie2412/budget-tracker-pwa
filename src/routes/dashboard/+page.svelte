@@ -5,6 +5,7 @@
   import { Pagination, TransactionCard } from "@/lib/components";
   import { fetchMonthlyReport } from "@/lib/services/monthly-report";
   import { showToast } from "@/stores/toast";
+  import { transactionRevision } from "@/stores/transactions-changed";
   import { language, t } from "@/stores/translation";
   import { ALL_CATEGORY_EMOJIS, type MonthlyReportData } from "@/types";
 
@@ -31,6 +32,7 @@
   let transactionError = $state("");
   let deletingTransactionId = $state<string | null>(null);
   let transactionRequestSequence = 0;
+  let observedTransactionRevision = $transactionRevision;
 
   const monthLabel = new Intl.DateTimeFormat(
     $language === "id" ? "id-ID" : "en-US",
@@ -226,6 +228,15 @@
       deletingTransactionId = null;
     }
   };
+
+  $effect(() => {
+    const revision = $transactionRevision;
+    if (revision === observedTransactionRevision) return;
+
+    observedTransactionRevision = revision;
+    void loadDashboard();
+    void loadTransactions(1);
+  });
 
   onMount(() => {
     void loadDashboard();

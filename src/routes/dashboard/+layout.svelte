@@ -3,6 +3,8 @@
 
   import { page } from "$app/state";
 
+  import { AddTransaction } from "@/lib/components";
+
   let { children }: { children: Snippet } = $props();
 </script>
 
@@ -12,7 +14,7 @@
 
 <nav
   aria-label="Navigasi utama"
-  class="dock fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] text-zinc-500 shadow-[0_-4px_16px_rgba(24,24,27,0.06)] max-w-md mx-auto"
+  class="dock fixed inset-x-0 bottom-0 z-50 mx-auto min-h-16 max-w-md border-t border-zinc-200 bg-white px-2 pb-[calc(env(safe-area-inset-bottom)+0.25rem)] text-zinc-500 shadow-[0_-4px_16px_rgba(24,24,27,0.06)]"
 >
   <a
     href="/dashboard"
@@ -65,6 +67,8 @@
     </svg>
     <span class="dock-label">Transaksi</span>
   </a>
+
+  <AddTransaction />
 
   <a
     href="/dashboard/reports"

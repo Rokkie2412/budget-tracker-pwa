@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Pagination, TransactionCard, TransactionFilters } from "@/lib/components";
   import type { TransactionFiltersState } from "@/lib/components/transaction-filters/transaction-filters.types";
+  import { transactionRevision } from "@/stores/transactions-changed";
   import { language, t } from "@/stores/translation";
 
   import {
@@ -25,6 +26,7 @@
     data.errorMessage ?? data.transactions.errorMessage ?? null,
   );
   let deletingTransactionId = $state<string | null>(null);
+  let observedTransactionRevision = $transactionRevision;
   const transactions = $derived(transactionResponse.data?.transactions ?? []);
   const pagination = $derived(transactionResponse.data?.pagination);
 
@@ -46,6 +48,14 @@
     setLoading: (value) => (isLoading = value),
     setLoadError: (value) => (loadError = value),
     setDeletingTransactionId: (value) => (deletingTransactionId = value),
+  });
+
+  $effect(() => {
+    const revision = $transactionRevision;
+    if (revision === observedTransactionRevision) return;
+
+    observedTransactionRevision = revision;
+    void fetchTransactions(1);
   });
 </script>
 
