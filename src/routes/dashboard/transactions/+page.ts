@@ -16,7 +16,8 @@ export const load: PageLoad = async ({ fetch, depends }) => {
   depends('app:transactions');
 
   try {
-    const res = await fetch(`${apiBaseUrl}/api/transactions-list?userId=${phoneNumber}`, {
+    const params = new URLSearchParams({ userId: phoneNumber, page: "1" });
+    const res = await fetch(`${apiBaseUrl}/api/transactions-list?${params}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -26,7 +27,7 @@ export const load: PageLoad = async ({ fetch, depends }) => {
 
     if (!res.ok) {
       return { 
-        transactions: [], 
+        transactions: { errorMessage: `Gagal mengambil data (${res.status})` },
         errorMessage: `Gagal mengambil data (${res.status})` 
       };
     }
@@ -36,7 +37,7 @@ export const load: PageLoad = async ({ fetch, depends }) => {
 
   } catch (err) {
     return { 
-      transactions: [], 
+      transactions: { errorMessage: "Terjadi kesalahan koneksi internet." },
       errorMessage: "Terjadi kesalahan koneksi internet." 
     };
   }

@@ -42,14 +42,20 @@
     }
   };
 
-  beforeNavigate(({ to }) => {
+  beforeNavigate(({ from, to }) => {
     if (
       to &&
       (to.url.pathname === "/" ||
         to.url.pathname === "/login" ||
         to.url.pathname.startsWith("/dashboard"))
     ) {
-      authCheckPending = true;
+      const movingWithinDashboard =
+        from?.url.pathname.startsWith("/dashboard") &&
+        to.url.pathname.startsWith("/dashboard");
+
+      if (!movingWithinDashboard) {
+        authCheckPending = true;
+      }
     }
   });
 

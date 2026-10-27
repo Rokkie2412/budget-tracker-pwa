@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { getCategoryTranslationKey } from "@/i18n";
+  import { language, t } from "@/stores/translation";
+
   import { getCategoryEmoji } from "./transactions-list.handlers";
   import type { Props } from "./transactions-list.types";
 
@@ -22,7 +25,7 @@
         <p
           class="mt-1 flex items-center gap-1 truncate text-sm leading-5 text-zinc-500"
         >
-          {category}
+          {category ? t(getCategoryTranslationKey(category), $language) : ""}
           {getCategoryEmoji(category, type)} • {date}
         </p>
       </div>
@@ -41,7 +44,7 @@
         <button
           type="button"
           class="btn btn-ghost btn-square btn-sm text-zinc-500 hover:bg-rose-50 hover:text-rose-700"
-          aria-label={`Hapus ${title}`}
+          aria-label={t("deleteTransaction", $language).replace("{title}", title)}
           onclick={onDelete}
         >
           <svg

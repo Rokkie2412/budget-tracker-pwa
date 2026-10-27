@@ -9,14 +9,23 @@ export type Transaction = {
   category?: Category;
 };
 
+export type TransactionsResponse = {
+  data?: {
+    transactions?: Transaction[];
+    pagination?: {
+      page: number;
+      limit: number;
+      totalTransactions: number;
+      totalPages: number;
+    };
+  };
+  errorMessage?: string | null;
+};
 
 export type Props = {
   data: {
-    transactions: {
-      data?: {
-        transactions?: Transaction[];
-      };
-    };
+    transactions: TransactionsResponse;
+    errorMessage?: string | null;
   };
 };
 

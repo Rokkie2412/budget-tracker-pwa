@@ -1,7 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
 
+  import { language, t } from "@/stores/translation";
+
   let { totalPages, page } = $props();
+  const displayPage = $derived(totalPages > 0 ? page : 0);
 
   const dispatch = createEventDispatcher<{ pageChange: number }>();
 
@@ -12,9 +15,9 @@
 <div class="flex flex-row items-center justify-center gap-2">
   <button
     onclick={() => dispatch("pageChange", page - 1)}
-    disabled={page === 1}
+    disabled={totalPages === 0 || page <= 1}
     class={btnClass}
-    aria-label="Previous page"
+    aria-label={t("previousPage", $language)}
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -35,14 +38,14 @@
   <span
     class="text-[0.925rem] font-semibold text-zinc-900 min-w-16 text-center"
   >
-    {page} / {totalPages}
+    {displayPage} / {totalPages}
   </span>
 
   <button
     onclick={() => dispatch("pageChange", page + 1)}
-    disabled={page === totalPages}
+    disabled={totalPages === 0 || page >= totalPages}
     class={btnClass}
-    aria-label="Next page"
+    aria-label={t("nextPage", $language)}
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
