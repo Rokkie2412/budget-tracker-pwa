@@ -86,9 +86,6 @@
     }
   };
 
-  const closeOnBackdrop = (event: MouseEvent) => {
-    if (event.target === event.currentTarget) closeDialog();
-  };
 </script>
 
 <div class="flex h-16 min-w-0 items-center justify-center">
@@ -113,11 +110,17 @@
     onclick={closeDialog}
   ></button>
   <section class="add-transaction-sheet relative z-10 px-5 pt-4">
-    <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-base-300"></div>
     <header class="mb-5 flex items-center justify-between gap-3">
-      <div>
-        <p class="text-xs font-semibold uppercase text-emerald-700">{t("transactionBookkeeping", $language)}</p>
-        <h2 class="mt-1 text-xl font-bold text-base-content">{t("addTransactionTitle", $language)}</h2>
+      <div class="flex min-w-0 items-center gap-3">
+        <div class="grid size-11 shrink-0 place-items-center rounded-xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+          <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs font-semibold uppercase text-emerald-700">{t("transactionBookkeeping", $language)}</p>
+          <h2 class="truncate text-xl font-bold text-base-content">{t("addTransactionTitle", $language)}</h2>
+        </div>
       </div>
       <button type="button" class="btn btn-ghost btn-sm btn-square" aria-label={t("cancel", $language)} onclick={closeDialog}>
         <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -126,7 +129,7 @@
       </button>
     </header>
 
-    <form class="space-y-4" onsubmit={saveTransaction}>
+    <form class="space-y-4 gap-4" onsubmit={saveTransaction}>
       <fieldset class="join grid grid-cols-2" aria-label={t("transactionType", $language)}>
         <label class={`btn join-item ${transactionType === "OUT" ? "btn-error" : "btn-ghost border border-base-300"}`}>
           <input type="radio" name="new-transaction-type" class="sr-only" checked={transactionType === "OUT"} onchange={() => changeType("OUT")} />
@@ -171,9 +174,6 @@
       </button>
     </form>
   </section>
-  <form method="dialog" class="modal-backdrop">
-    <button aria-label={t("cancel", $language)} onclick={closeDialog}>close</button>
-  </form>
 </dialog>
 
 <style>
@@ -183,15 +183,16 @@
     display: none;
     width: 100%;
     max-width: none;
-    height: 100dvh;
-    max-height: 100dvh;
+    height: 100%;
+    max-height: none;
     margin: 0;
-    padding: 0;
+    padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+    box-sizing: border-box;
     overflow: hidden;
     border: 0;
     background: transparent;
     color: inherit;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
   }
 
@@ -205,21 +206,25 @@
 
   .add-transaction-sheet {
     width: min(100%, 28rem);
-    max-height: 90dvh;
+    max-height: 86dvh;
     overflow-y: auto;
     overscroll-behavior: contain;
-    border-radius: 1.25rem 1.25rem 0 0;
+    border: 1px solid var(--color-base-300);
+    border-radius: 1.25rem;
     background: var(--color-base-100);
     color: var(--color-base-content);
-    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
-    animation: add-sheet-rise 220ms ease-out both;
+    padding-bottom: 1.25rem;
+    box-shadow: 0 24px 70px rgb(9 9 11 / 0.24);
+    animation: add-dialog-enter 180ms ease-out both;
   }
 
-  @keyframes add-sheet-rise {
+  @keyframes add-dialog-enter {
     from {
-      transform: translateY(100%);
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
     }
     to {
+      opacity: 1;
       transform: translateY(0);
     }
   }
