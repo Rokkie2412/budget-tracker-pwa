@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { TransactionCard } from "@/lib/components";
+  import { Pagination, TransactionCard } from "@/lib/components";
 
   import type { Props } from "./transactions.types";
 
@@ -25,6 +25,7 @@
   </div>
 {:then result}
   {@const transactions = result?.data?.transactions ?? []}
+  {console.log("result", result)}
 
   <main
     data-theme="light"
@@ -64,6 +65,12 @@
               />
             </div>
           {/each}
+
+          <Pagination
+            totalPages={result.data.pagination.totalPages}
+            page={result.data.pagination.page}
+            on:pageChange={() => {}}
+          />
         </div>
       {:else}
         <div
