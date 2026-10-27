@@ -234,11 +234,10 @@
 </script>
 
 <main
-  data-theme="light"
   class="mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-5 pb-4"
 >
   <section class="flex min-h-0 w-full flex-1 flex-col gap-4">
-    <header class="flex shrink-0 items-end justify-between gap-3 border-b border-zinc-200 bg-white pb-4">
+    <header class="flex shrink-0 items-end justify-between gap-3 border-b border-zinc-200 bg-base-100 pb-4">
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500">
           {t("transactionBookkeeping", $language)}

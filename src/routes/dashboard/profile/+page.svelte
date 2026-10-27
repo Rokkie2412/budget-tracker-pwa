@@ -1,9 +1,10 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
 
-  import { InitialProfile } from "../../../lib/components";
-  import { removeAuth } from "../../../lib/services/auth";
-  import { language, setLanguage, t } from "../../../stores/translation";
+  import { InitialProfile } from "@/lib/components";
+  import { removeAuth } from "@/lib/services/auth";
+  import { setTheme, theme } from "@/stores/theme";
+  import { language, setLanguage, t } from "@/stores/translation";
 
   const mockData = {
     userId: "+6285156141278",
@@ -18,84 +19,122 @@
 </script>
 
 <section
-  data-theme="light"
   class="h-[calc(100dvh-6rem)] overflow-hidden bg-zinc-100"
 >
   <article
-    class="mx-auto flex h-full w-full max-w-md flex-col bg-white px-6 py-5 shadow-xl shadow-zinc-900/5"
+    class="mx-auto flex h-full w-full max-w-md flex-col overflow-y-auto bg-base-100 shadow-xl shadow-zinc-900/5"
   >
-    <header class="mb-6">
-      <h1 class="text-2xl font-bold tracking-tight text-zinc-900">Profile</h1>
+    <header class="profile-enter shrink-0 bg-gradient-to-br from-emerald-700 via-teal-700 to-sky-800 px-6 pt-6 pb-14 text-white">
+      <p class="text-xs font-semibold uppercase text-emerald-100">
+        {t("profileAccount", $language)}
+      </p>
+      <h1 class="mt-2 text-3xl font-bold">
+        {t("profileTitle", $language)}
+      </h1>
     </header>
 
-    <div class="flex flex-col items-center">
-      <InitialProfile name={mockData.userName} />
+    <div class="profile-enter profile-enter-delay -mt-8 flex flex-col px-5 pb-6">
+      <div class="rounded-xl border border-base-300 bg-base-100 p-4 shadow-md shadow-zinc-900/5">
+        <InitialProfile name={mockData.userName} />
+        <div class="mt-4 flex items-center justify-between gap-3 border-t border-base-300 pt-3">
+          <span class="text-xs font-medium text-base-content/60">
+            {t("numberTeL", $language)}
+          </span>
+          <span class="text-sm font-semibold text-base-content">
+            {mockData.userId}
+          </span>
+        </div>
+      </div>
 
-      <div
-        class="mt-8 w-full divide-y divide-zinc-100 rounded-2xl border border-zinc-200 bg-white px-4"
-      >
-        <div class="divide-y divide-zinc-100">
-          <div class="flex min-h-16 items-center justify-between gap-4 py-3">
-            <p class="text-sm font-medium text-zinc-500">
-              {t("numberTeL", $language)}
-            </p>
-            <p class="text-right text-sm font-semibold text-zinc-900">
-              {mockData.userId}
-            </p>
-          </div>
-          <label class="flex min-h-16 items-center justify-between gap-4 py-3">
-            <p class="text-sm font-medium text-zinc-500">
-              {t("allowChatLabel", $language)}
-            </p>
+      <section class="profile-enter profile-enter-delay-2 mt-7">
+        <h2 class="mb-2 px-1 text-xs font-bold uppercase text-base-content/50">
+          {t("profilePreferences", $language)}
+        </h2>
+        <div class="divide-y divide-base-300 border-y border-base-300">
+          <fieldset class="flex flex-col gap-3 py-4">
+            <legend class="text-sm font-semibold text-base-content">
+              {t("languageLabel", $language)}
+            </legend>
+            <div class="join grid grid-cols-2">
+              <label class="btn btn-sm join-item justify-start gap-2 border-base-300 bg-base-100 normal-case">
+                <input
+                  type="radio"
+                  name="profile-language"
+                  class="radio radio-xs"
+                  value="id"
+                  checked={$language === "id"}
+                  onchange={() => setLanguage("id")}
+                />
+                <span>Bahasa Indonesia</span>
+              </label>
+              <label class="btn btn-sm join-item justify-start gap-2 border-base-300 bg-base-100 normal-case">
+                <input
+                  type="radio"
+                  name="profile-language"
+                  class="radio radio-xs"
+                  value="en"
+                  checked={$language === "en"}
+                  onchange={() => setLanguage("en")}
+                />
+                <span>English</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="flex flex-col gap-3 py-4">
+            <legend class="text-sm font-semibold text-base-content">
+              {t("themeLabel", $language)}
+            </legend>
+            <div class="join grid grid-cols-2">
+              <label class="btn btn-sm join-item justify-start gap-2 border-base-300 bg-base-100 normal-case">
+                <input
+                  type="radio"
+                  name="profile-theme"
+                  class="radio radio-xs"
+                  value="light"
+                  checked={$theme === "light"}
+                  onchange={() => setTheme("light")}
+                />
+                <span>{t("themeLight", $language)}</span>
+              </label>
+              <label class="btn btn-sm join-item justify-start gap-2 border-base-300 bg-base-100 normal-case">
+                <input
+                  type="radio"
+                  name="profile-theme"
+                  class="radio radio-xs"
+                  value="dark"
+                  checked={$theme === "dark"}
+                  onchange={() => setTheme("dark")}
+                />
+                <span>{t("themeDark", $language)}</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <label class="flex min-h-16 items-center justify-between gap-4 py-4">
+            <div>
+              <p class="text-sm font-semibold text-base-content">
+                {t("allowChatLabel", $language)}
+              </p>
+              <p class="mt-0.5 text-xs text-base-content/50">
+                WhatsApp
+              </p>
+            </div>
             <input
               type="checkbox"
-              checked
-              class="toggle toggle-sm"
-              aria-label="Allow Chat Feature"
+              checked={mockData.allowChat}
+              class="toggle toggle-sm toggle-success"
+              aria-label={t("allowChatLabel", $language)}
             />
           </label>
         </div>
-
-        <fieldset
-          class="flex flex-row min-h-16 items-center justify-between gap-3 py-3"
-        >
-          <p class="text-sm font-medium text-zinc-500">
-            {t("languageLabel", $language)}
-          </p>
-          <div class="flex flex-wrap items-center justify-end gap-x-3 gap-y-2">
-            <label class="flex cursor-pointer items-center gap-1.5">
-              <input
-                type="radio"
-                name="profile-language"
-                class="radio radio-sm"
-                value="id"
-                checked={$language === "id"}
-                onchange={() => setLanguage("id")}
-              />
-              <span class="text-xs font-medium text-zinc-700"
-                >Bahasa Indonesia</span
-              >
-            </label>
-            <label class="flex cursor-pointer items-center gap-1.5">
-              <input
-                type="radio"
-                name="profile-language"
-                class="radio radio-sm"
-                value="en"
-                checked={$language === "en"}
-                onchange={() => setLanguage("en")}
-              />
-              <span class="text-xs font-medium text-zinc-700">English</span>
-            </label>
-          </div>
-        </fieldset>
-      </div>
+      </section>
     </div>
 
     <button
       onclick={onClickLogOut}
       type="button"
-      class="btn btn-wide mt-auto self-center gap-2 border-0 bg-red-800 text-white hover:bg-red-900"
+      class="profile-enter profile-enter-delay-3 btn btn-wide mb-5 mt-auto shrink-0 self-center gap-2 border-0 bg-rose-700 text-white hover:bg-rose-800"
     >
       <svg
         aria-hidden="true"
@@ -116,3 +155,41 @@
     </button>
   </article>
 </section>
+
+<style>
+  @keyframes profile-rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .profile-enter {
+    animation: profile-rise 420ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  }
+
+  .profile-enter-delay {
+    animation-delay: 80ms;
+  }
+
+  .profile-enter-delay-2 {
+    animation-delay: 150ms;
+  }
+
+  .profile-enter-delay-3 {
+    animation-delay: 220ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .profile-enter,
+    .profile-enter-delay,
+    .profile-enter-delay-2,
+    .profile-enter-delay-3 {
+      animation: none;
+    }
+  }
+</style>

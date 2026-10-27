@@ -8,7 +8,7 @@
 
   import { ToastContainer } from "@/lib/components";
   import { checkAuth } from "@/lib/services/auth";
-  import { loadLanguage } from "@/stores";
+  import { loadLanguage, loadTheme, theme } from "@/stores";
 
   let { children } = $props();
   let navigationCheck = 0;
@@ -65,18 +65,21 @@
 
   onMount(() => {
     loadLanguage();
+    loadTheme();
   });
 </script>
 
-{#if authCheckPending}
-  <main
-    class="flex min-h-dvh items-center justify-center bg-zinc-100"
-    role="status"
-    aria-label="Checking authentication"
-  >
-    <span class="loading loading-spinner loading-lg text-zinc-700"></span>
-  </main>
-{:else}
-  {@render children()}
-{/if}
-<ToastContainer />
+<div data-theme={$theme} class="min-h-dvh bg-base-100 text-base-content">
+  {#if authCheckPending}
+    <main
+      class="flex min-h-dvh items-center justify-center bg-zinc-100"
+      role="status"
+      aria-label="Checking authentication"
+    >
+      <span class="loading loading-spinner loading-lg text-zinc-700"></span>
+    </main>
+  {:else}
+    {@render children()}
+  {/if}
+  <ToastContainer />
+</div>

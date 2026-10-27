@@ -44,7 +44,7 @@
 	<meta name="theme-color" content="#f4f4f5" />
 </svelte:head>
 
-<main data-theme="light" class="min-h-dvh bg-zinc-100">
+<main class="min-h-dvh bg-zinc-100">
 	{#if $loadingMask}
 		<LoadingMask text={t("loading")} />
 	{/if}
