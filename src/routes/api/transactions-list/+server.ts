@@ -1,7 +1,7 @@
 import type { RequestHandler } from "@sveltejs/kit";
 
 import { BUDGET_CATEGORIES_EXPENSE, BUDGET_CATEGORIES_INCOME } from "@/constants";
-import { connectDataBase, decrypt, hashUserId, verifyAuth } from "@/lib/utils/index.server";
+import { connectDataBase, decrypt, hashUserId } from "@/lib/utils/index.server";
 import Transaction from "@/models/transaction-list";
 
 const ALL_CATEGORIES: readonly string[] = [
@@ -143,5 +143,49 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 					{ message: "An error occurred on the server.", error: errorMessage },
 					{ status: 500 },
 			);
+	}
+};
+
+export const DELETE: RequestHandler = async ({ locals, request }) => {
+	const userId = locals.user?.userId?.trim();
+	if (!userId) {
+		return Response.json({ message: "Unauthorized" }, { status: 401 });
+	}
+
+	let body: unknown;
+	try {
+		body = await request.json();
+	} catch {
+		return Response.json({ message: "Request body must be valid JSON." }, { status: 400 });
+	}
+
+	if (
+		typeof body !== "object" ||
+		body === null ||
+		!("transactionId" in body) ||
+		typeof body.transactionId !== "string" ||
+		!/^[a-f\d]{24}$/i.test(body.transactionId)
+	) {
+		return Response.json({ message: "A valid transactionId is required." }, { status: 400 });
+	}
+
+	try {
+		await connectDataBase();
+		const result = await Transaction.deleteOne({
+			_id: body.transactionId,
+			userId: hashUserId(userId),
+		});
+
+		if (result.deletedCount === 0) {
+			return Response.json({ message: "Transaction not found." }, { status: 404 });
+		}
+
+		return Response.json({ message: "Transaction deleted." });
+	} catch (error: unknown) {
+		const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
+		return Response.json(
+			{ message: "An error occurred while deleting the transaction.", error: errorMessage },
+			{ status: 500 },
+		);
 	}
 };

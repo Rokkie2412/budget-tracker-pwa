@@ -1,0 +1,1 @@
+export { fetchMonthlyReport } from "@/lib/services/monthly-report";

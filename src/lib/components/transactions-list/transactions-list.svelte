@@ -12,6 +12,7 @@
     amount,
     type = "OUT",
     onDelete,
+    isDeleting = false,
   }: Props = $props();
 </script>
 
@@ -44,10 +45,14 @@
         <button
           type="button"
           class="btn btn-ghost btn-square btn-sm text-zinc-500 hover:bg-rose-50 hover:text-rose-700"
-          aria-label={t("deleteTransaction", $language).replace("{title}", title)}
+          aria-label={t(isDeleting ? "deletingTransaction" : "deleteTransaction", $language).replace("{title}", title)}
+          disabled={isDeleting}
           onclick={onDelete}
         >
-          <svg
+          {#if isDeleting}
+            <span class="loading loading-spinner loading-sm" aria-hidden="true"></span>
+          {:else}
+            <svg
             aria-hidden="true"
             class="size-5"
             xmlns="http://www.w3.org/2000/svg"
@@ -63,7 +68,8 @@
             <path d="m19 6-1 14H6L5 6" />
             <path d="M10 11v5" />
             <path d="M14 11v5" />
-          </svg>
+            </svg>
+          {/if}
         </button>
       </div>
     {/if}

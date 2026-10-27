@@ -23,9 +23,16 @@ interface AggregationCategoryItem {
   count: number;
 }
 
+interface AggregationDailyItem {
+	_id: number;
+	income: number;
+	expense: number;
+}
+
 interface MonthlyReportAggregation {
   summary: AggregationSummaryItem[];
   categories: AggregationCategoryItem[];
+  daily: AggregationDailyItem[];
 }
 
 const getTargetMonth = (searchParams: URLSearchParams) => {
@@ -105,6 +112,20 @@ export const GET: RequestHandler = async ({ locals, url }): Promise<Response> =>
             },
             { $sort: { total: -1 } },
           ],
+          daily: [
+            {
+              $group: {
+                _id: { $dayOfMonth: "$date" },
+                income: {
+                  $sum: { $cond: [{ $eq: ["$type", "IN"] }, "$amount", 0] },
+                },
+                expense: {
+                  $sum: { $cond: [{ $eq: ["$type", "OUT"] }, "$amount", 0] },
+                },
+              },
+            },
+            { $sort: { _id: 1 } },
+          ],
         },
       },
     ]);
@@ -115,6 +136,19 @@ export const GET: RequestHandler = async ({ locals, url }): Promise<Response> =>
 
     const expenses: CategoryBreakdownItem<ExpenseCategory>[] = [];
     const income: CategoryBreakdownItem<IncomeCategory>[] = [];
+    const dailyByDay = new Map(
+      (result?.daily ?? []).map((item) => [item._id, item]),
+    );
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const timeline = Array.from({ length: daysInMonth }, (_, index) => {
+      const day = index + 1;
+      const totals = dailyByDay.get(day);
+      return {
+        day,
+        income: totals?.income ?? 0,
+        expense: totals?.expense ?? 0,
+      };
+    });
 
     for (const item of result?.categories ?? []) {
       const { type, category } = item._id;
@@ -146,6 +180,7 @@ export const GET: RequestHandler = async ({ locals, url }): Promise<Response> =>
       data: {
         year,
         month,
+        timeline,
         summary: {
           total: incomeTotal - expenseTotal,
           income: incomeTotal,

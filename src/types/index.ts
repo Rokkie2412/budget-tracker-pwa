@@ -99,12 +99,19 @@ export type MonthlyReportPaginatedData = {
 export type MonthlyReportData = {
   year: number;
   month: number;
+  timeline: MonthlyReportDay[];
   summary: {
     total: number;
     income: number;
     expense: number;
   };
   categories: CategoryBreakdown;
+};
+
+export type MonthlyReportDay = {
+  day: number;
+  income: number;
+  expense: number;
 };
 
 export type MonthlyReportResponse = {

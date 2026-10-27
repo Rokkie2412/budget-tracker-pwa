@@ -7,4 +7,5 @@ export type Props = {
   amount?: string;
   type?: "IN" | "OUT";
   onDelete?: () => void;
+  isDeleting?: boolean;
 };
