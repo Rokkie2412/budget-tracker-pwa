@@ -18,13 +18,13 @@
   };
 </script>
 
-<section
-  class="h-[calc(100dvh-6rem)] overflow-hidden bg-zinc-100"
->
+<section class="h-[calc(100dvh-6rem)] overflow-hidden bg-zinc-100">
   <article
     class="mx-auto flex h-full w-full max-w-md flex-col overflow-y-auto bg-base-100 shadow-xl shadow-zinc-900/5"
   >
-    <header class="profile-enter shrink-0 bg-gradient-to-br from-emerald-700 via-teal-700 to-sky-800 px-6 pt-6 pb-14 text-white">
+    <header
+      class="profile-enter shrink-0 bg-gradient-to-br from-emerald-700 via-teal-700 to-sky-800 px-6 pt-6 pb-14 text-white"
+    >
       <p class="text-xs font-semibold uppercase text-emerald-100">
         {t("profileAccount", $language)}
       </p>
@@ -33,10 +33,16 @@
       </h1>
     </header>
 
-    <div class="profile-enter profile-enter-delay -mt-8 flex flex-col px-5 pb-6">
-      <div class="rounded-xl border border-base-300 bg-base-100 p-4 shadow-md shadow-zinc-900/5">
+    <div
+      class="profile-enter profile-enter-delay -mt-8 flex flex-col px-5 pb-6"
+    >
+      <div
+        class="rounded-xl border border-base-300 bg-base-100 p-4 shadow-md shadow-zinc-900/5"
+      >
         <InitialProfile name={mockData.userName} />
-        <div class="mt-4 flex items-center justify-between gap-3 border-t border-base-300 pt-3">
+        <div
+          class="mt-4 flex items-center justify-between gap-3 border-t border-base-300 pt-3"
+        >
           <span class="text-xs font-medium text-base-content/60">
             {t("numberTeL", $language)}
           </span>
@@ -56,7 +62,9 @@
               {t("languageLabel", $language)}
             </legend>
             <div class="join grid grid-cols-2">
-              <label class="btn btn-sm join-item justify-start gap-2 border-base-300 bg-base-100 normal-case">
+              <label
+                class="btn btn-sm join-item justify-start gap-2 border-base-300 bg-base-100 normal-case"
+              >
                 <input
                   type="radio"
                   name="profile-language"
@@ -67,7 +75,9 @@
                 />
                 <span>Bahasa Indonesia</span>
               </label>
-              <label class="btn btn-sm join-item justify-start gap-2 border-base-300 bg-base-100 normal-case">
+              <label
+                class="btn btn-sm join-item justify-start gap-2 border-base-300 bg-base-100 normal-case"
+              >
                 <input
                   type="radio"
                   name="profile-language"
@@ -86,7 +96,9 @@
               {t("themeLabel", $language)}
             </legend>
             <div class="join grid grid-cols-2">
-              <label class="btn btn-sm join-item justify-start gap-2 border-base-300 bg-base-100 normal-case">
+              <label
+                class="btn btn-sm join-item justify-start gap-2 border-base-300 bg-base-100 normal-case"
+              >
                 <input
                   type="radio"
                   name="profile-theme"
@@ -97,7 +109,9 @@
                 />
                 <span>{t("themeLight", $language)}</span>
               </label>
-              <label class="btn btn-sm join-item justify-start gap-2 border-base-300 bg-base-100 normal-case">
+              <label
+                class="btn btn-sm join-item justify-start gap-2 border-base-300 bg-base-100 normal-case"
+              >
                 <input
                   type="radio"
                   name="profile-theme"
@@ -116,9 +130,7 @@
               <p class="text-sm font-semibold text-base-content">
                 {t("allowChatLabel", $language)}
               </p>
-              <p class="mt-0.5 text-xs text-base-content/50">
-                WhatsApp
-              </p>
+              <p class="mt-0.5 text-xs text-base-content/50">WhatsApp</p>
             </div>
             <input
               type="checkbox"

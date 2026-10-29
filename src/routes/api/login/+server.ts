@@ -35,7 +35,6 @@ export const POST: RequestHandler = async ({ request }) => {
     });
 
     if (!user || !(await compare(body.password, user.password))) {
-      console.log('USER', user);
 
       return json({ message: 'INVALID_CREDENTIALS' }, { status: 401 });
     }

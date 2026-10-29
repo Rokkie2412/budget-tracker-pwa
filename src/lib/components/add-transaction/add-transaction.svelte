@@ -20,7 +20,9 @@
   let isSaving = $state(false);
 
   const categories = $derived(
-    transactionType === "IN" ? BUDGET_CATEGORIES_INCOME : BUDGET_CATEGORIES_EXPENSE,
+    transactionType === "IN"
+      ? BUDGET_CATEGORIES_INCOME
+      : BUDGET_CATEGORIES_EXPENSE,
   );
 
   const openDialog = () => {
@@ -42,7 +44,10 @@
 
   const changeType = (type: "IN" | "OUT") => {
     transactionType = type;
-    category = type === "IN" ? BUDGET_CATEGORIES_INCOME[0] : BUDGET_CATEGORIES_EXPENSE[0];
+    category =
+      type === "IN"
+        ? BUDGET_CATEGORIES_INCOME[0]
+        : BUDGET_CATEGORIES_EXPENSE[0];
   };
 
   const saveTransaction = async (event: SubmitEvent) => {
@@ -71,21 +76,23 @@
         }),
       });
 
-      if (!response.ok) throw new Error(t("transactionCreateFailed", $language));
+      if (!response.ok)
+        throw new Error(t("transactionCreateFailed", $language));
 
       showToast(t("transactionCreateSuccess", $language), "success");
       notifyTransactionsChanged();
       closeDialog();
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : t("transactionCreateFailed", $language),
+        error instanceof Error
+          ? error.message
+          : t("transactionCreateFailed", $language),
         "error",
       );
     } finally {
       isSaving = false;
     }
   };
-
 </script>
 
 <div class="flex h-16 min-w-0 items-center justify-center">
@@ -96,7 +103,15 @@
     title={t("addTransaction", $language)}
     onclick={openDialog}
   >
-    <svg aria-hidden="true" class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+    <svg
+      aria-hidden="true"
+      class="size-6"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+    >
       <path d="M12 5v14M5 12h14" />
     </svg>
   </button>
@@ -105,67 +120,147 @@
 <dialog bind:this={dialog} class="add-transaction-dialog">
   <button
     type="button"
-    class="absolute inset-0 z-0 cursor-default bg-zinc-950/50 backdrop-blur-sm"
+    class="absolute inset-0 z-0 cursor-default bg-zinc- 950/50 backdrop-blur-sm"
     aria-label={t("cancel", $language)}
     onclick={closeDialog}
   ></button>
   <section class="add-transaction-sheet relative z-10 px-5 pt-4">
     <header class="mb-5 flex items-center justify-between gap-3">
       <div class="flex min-w-0 items-center gap-3">
-        <div class="grid size-11 shrink-0 place-items-center rounded-xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
-          <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <div
+          class="grid size-11 shrink-0 place-items-center rounded-xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
+        >
+          <svg
+            aria-hidden="true"
+            class="size-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <path d="M12 5v14M5 12h14" />
           </svg>
         </div>
         <div class="min-w-0">
-          <p class="text-xs font-semibold uppercase text-emerald-700">{t("transactionBookkeeping", $language)}</p>
-          <h2 class="truncate text-xl font-bold text-base-content">{t("addTransactionTitle", $language)}</h2>
+          <p class="text-xs font-semibold uppercase text-emerald-700">
+            {t("transactionBookkeeping", $language)}
+          </p>
+          <h2 class="truncate text-xl font-bold text-base-content">
+            {t("addTransactionTitle", $language)}
+          </h2>
         </div>
       </div>
-      <button type="button" class="btn btn-ghost btn-sm btn-square" aria-label={t("cancel", $language)} onclick={closeDialog}>
-        <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm btn-square"
+        aria-label={t("cancel", $language)}
+        onclick={closeDialog}
+      >
+        <svg
+          aria-hidden="true"
+          class="size-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
           <path d="m6 6 12 12M18 6 6 18" />
         </svg>
       </button>
     </header>
 
     <form class="space-y-4 gap-4" onsubmit={saveTransaction}>
-      <fieldset class="join grid grid-cols-2" aria-label={t("transactionType", $language)}>
-        <label class={`btn join-item ${transactionType === "OUT" ? "btn-error" : "btn-ghost border border-base-300"}`}>
-          <input type="radio" name="new-transaction-type" class="sr-only" checked={transactionType === "OUT"} onchange={() => changeType("OUT")} />
+      <fieldset
+        class="join grid grid-cols-2"
+        aria-label={t("transactionType", $language)}
+      >
+        <label
+          class={`btn join-item ${transactionType === "OUT" ? "btn-error" : "btn-ghost border border-base-300"}`}
+        >
+          <input
+            type="radio"
+            name="new-transaction-type"
+            class="sr-only"
+            checked={transactionType === "OUT"}
+            onchange={() => changeType("OUT")}
+          />
           {t("transactionOut", $language)}
         </label>
-        <label class={`btn join-item ${transactionType === "IN" ? "btn-success" : "btn-ghost border border-base-300"}`}>
-          <input type="radio" name="new-transaction-type" class="sr-only" checked={transactionType === "IN"} onchange={() => changeType("IN")} />
+        <label
+          class={`btn join-item ${transactionType === "IN" ? "btn-success" : "btn-ghost border border-base-300"}`}
+        >
+          <input
+            type="radio"
+            name="new-transaction-type"
+            class="sr-only"
+            checked={transactionType === "IN"}
+            onchange={() => changeType("IN")}
+          />
           {t("transactionIn", $language)}
         </label>
       </fieldset>
 
       <label class="form-control gap-1.5">
-        <span class="text-sm font-semibold text-base-content">{t("transactionAmount", $language)}</span>
-        <input class="input input-bordered w-full" type="number" min="1" step="1" inputmode="decimal" bind:value={amount} required />
+        <span class="text-sm font-semibold text-base-content"
+          >{t("transactionAmount", $language)}</span
+        >
+        <input
+          class="input input-bordered w-full"
+          type="number"
+          min="1"
+          step="1"
+          inputmode="decimal"
+          bind:value={amount}
+          required
+        />
       </label>
 
       <label class="form-control gap-1.5">
-        <span class="text-sm font-semibold text-base-content">{t("transactionDescription", $language)}</span>
-        <input class="input input-bordered w-full" type="text" maxlength="200" bind:value={description} required />
+        <span class="text-sm font-semibold text-base-content"
+          >{t("transactionDescription", $language)}</span
+        >
+        <input
+          class="input input-bordered w-full"
+          type="text"
+          maxlength="200"
+          bind:value={description}
+          required
+        />
       </label>
 
       <label class="form-control gap-1.5">
-        <span class="text-sm font-semibold text-base-content">{t("transactionCategory", $language)}</span>
+        <span class="text-sm font-semibold text-base-content"
+          >{t("transactionCategory", $language)}</span
+        >
         <select class="select select-bordered w-full" bind:value={category}>
           {#each categories as option (option)}
-            <option value={option}>{t(getCategoryTranslationKey(option), $language)}</option>
+            <option value={option}
+              >{t(getCategoryTranslationKey(option), $language)}</option
+            >
           {/each}
         </select>
       </label>
 
       <label class="form-control gap-1.5">
-        <span class="text-sm font-semibold text-base-content">{t("transactionDate", $language)}</span>
-        <input class="input input-bordered w-full" type="date" bind:value={date} required />
+        <span class="text-sm font-semibold text-base-content"
+          >{t("transactionDate", $language)}</span
+        >
+        <input
+          class="input input-bordered w-full"
+          type="date"
+          bind:value={date}
+          required
+        />
       </label>
 
-      <button type="submit" class={`btn w-full ${transactionType === "IN" ? "btn-success" : "btn-error"}`} disabled={isSaving}>
+      <button
+        type="submit"
+        class={`btn w-full ${transactionType === "IN" ? "btn-success" : "btn-error"}`}
+        disabled={isSaving}
+      >
         {#if isSaving}
           <span class="loading loading-spinner loading-sm"></span>
         {:else}
@@ -186,14 +281,15 @@
     height: 100%;
     max-height: none;
     margin: 0;
-    padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+    padding: max(1rem, env(safe-area-inset-top)) 1rem
+      max(1rem, env(safe-area-inset-bottom));
     box-sizing: border-box;
     overflow: hidden;
     border: 0;
-    background: transparent;
     color: inherit;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 24px 70px rgb(9 9 11 / 0.24);
   }
 
   .add-transaction-dialog[open] {
@@ -202,6 +298,8 @@
 
   .add-transaction-dialog::backdrop {
     background: transparent;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
   }
 
   .add-transaction-sheet {
