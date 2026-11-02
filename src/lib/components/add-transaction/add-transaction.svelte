@@ -18,9 +18,11 @@
   const transactionSchema = yup.object({
     type: yup.mixed<"IN" | "OUT">().oneOf(["IN", "OUT"]).required(),
     amount: yup
-      .string()
+      .number()
+      .typeError(t("invalidTransactionAmount"))
       .required(t("fieldRequired"))
-      .matches(/^[1-9]\d*$/, t("invalidTransactionAmount")),
+      .min(1, t("invalidTransactionAmount"))
+      .integer(t("invalidTransactionAmount")),
     description: yup
       .string()
       .trim()
@@ -45,7 +47,10 @@
       }),
   });
 
-  type TransactionFormValues = yup.InferType<typeof transactionSchema>;
+  type TransactionFormValues = Omit<
+    yup.InferType<typeof transactionSchema>,
+    "amount"
+  > & { amount: number | string };
 
   const initialTransactionValues = (): TransactionFormValues => ({
     type: "OUT",
