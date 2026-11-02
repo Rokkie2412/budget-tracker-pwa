@@ -68,18 +68,18 @@
 >
   <section class="flex min-h-0 w-full flex-1 flex-col gap-3">
     <header
-      class="flex shrink-0 items-end justify-between gap-3 border-b border-zinc-200 pb-4"
+      class="flex shrink-0 items-end justify-between gap-3 border-b border-zinc-200 dark:border-zinc-700 pb-4"
     >
       <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+        <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
           {t("transactionBookkeeping", $language)}
         </p>
-        <h1 class="mt-1 text-3xl font-bold text-zinc-900">
+        <h1 class="mt-1 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
           {t("transactionsTitle", $language)}
         </h1>
       </div>
-      <p class="pb-1 text-right text-sm font-medium text-zinc-500">
-        <span class="block text-lg font-bold tabular-nums text-zinc-900"
+      <p class="pb-1 text-right text-sm font-medium text-zinc-500 dark:text-zinc-400">
+        <span class="block text-lg font-bold tabular-nums text-zinc-900 dark:text-zinc-100"
           >{pagination?.totalTransactions ?? transactions.length}</span
         >
         {t("transactionCount", $language)}
@@ -94,7 +94,7 @@
         role="status"
         aria-label={t("transactionsLoading", $language)}
       >
-        <span class="loading loading-spinner loading-lg text-primary"></span>
+        <span class="size-8 animate-spin rounded-full border-2 border-emerald-700 border-r-transparent" aria-hidden="true"></span>
       </div>
     {:else if loadError}
       <div
@@ -103,10 +103,10 @@
         <p class="font-semibold text-red-600">
           {t("transactionsError", $language)}
         </p>
-        <p class="text-sm text-zinc-500">{loadError}</p>
+        <p class="text-sm text-zinc-500 dark:text-zinc-400">{loadError}</p>
         <button
           type="button"
-          class="btn btn-sm btn-outline"
+          class="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
           onclick={() => fetchTransactions(1)}
         >
           {t("retry", $language)}
@@ -114,7 +114,7 @@
       </div>
     {:else if transactions.length > 0}
       <div
-        class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white"
+        class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
       >
         <div
           class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3"
@@ -124,7 +124,7 @@
             <div
               class={index === transactions.length - 1
                 ? ""
-                : "border-b border-zinc-200"}
+                : "border-b border-zinc-200 dark:border-zinc-700"}
             >
               <TransactionCard
                 onDelete={() => deleteTransaction(transaction)}
@@ -147,9 +147,9 @@
 
         {#if pagination}
           <footer
-            class="flex shrink-0 items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50 px-4 py-3"
+            class="flex shrink-0 items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800"
           >
-            <p class="text-xs font-medium text-zinc-500">
+            <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">
               {t("paginationPageSummary", $language)
                 .replace("{page}", String(pagination.page))
                 .replace("{total}", String(pagination.totalPages))}
@@ -164,12 +164,12 @@
       </div>
     {:else}
       <div
-        class="rounded-lg border border-zinc-200 bg-white px-5 py-12 text-center"
+        class="rounded-lg border border-zinc-200 bg-white px-5 py-12 text-center dark:border-zinc-700 dark:bg-zinc-900"
       >
-        <p class="font-semibold text-zinc-900">
+        <p class="font-semibold text-zinc-900 dark:text-zinc-100">
           {t("transactionsEmptyTitle", $language)}
         </p>
-        <p class="mt-1 text-sm text-zinc-500">
+        <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
           {t("transactionsEmptyDescription", $language)}
         </p>
       </div>

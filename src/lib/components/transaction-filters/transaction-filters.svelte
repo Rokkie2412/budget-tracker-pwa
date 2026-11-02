@@ -145,11 +145,11 @@
 
 <section class="shrink-0 space-y-3" aria-label={t("transactionFilters", $language)}>
   <div class="grid gap-2">
-    <div class="join flex w-full" role="group" aria-label={t("transactionType", $language)}>
+    <div class="flex w-full overflow-hidden rounded-lg" role="group" aria-label={t("transactionType", $language)}>
       {#each typeOptions as option (option.value)}
         <button
           type="button"
-          class={`btn btn-sm join-item min-w-0 flex-1 ${filters.type === option.value ? "btn-neutral" : "btn-ghost border border-zinc-200 bg-white"}`}
+          class={`min-h-10 min-w-0 flex-1 px-3 text-sm font-semibold transition-colors ${filters.type === option.value ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "border border-zinc-200 bg-white text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"}`}
           aria-pressed={filters.type === option.value}
           onclick={() => updateType(option.value)}
         >
@@ -161,7 +161,7 @@
     <label class="sr-only" for="transaction-category">{t("transactionCategory", $language)}</label>
     <select
       id="transaction-category"
-      class="select select-sm w-full border-zinc-200 bg-white"
+      class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-emerald-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
       value={filters.category}
       onchange={(event) => updateCategory(event.currentTarget.value)}
     >
@@ -177,7 +177,7 @@
       {#each dateOptions as option (option.value)}
         <button
           type="button"
-          class={`btn btn-xs shrink-0 ${filters.period === option.value ? "btn-outline btn-neutral" : "btn-ghost text-zinc-600"}`}
+          class={`shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${filters.period === option.value ? "border-zinc-800 bg-zinc-900 text-white dark:border-zinc-200 dark:bg-zinc-100 dark:text-zinc-900" : "border-transparent text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"}`}
           aria-pressed={filters.period === option.value}
           onclick={() => updatePeriod(option.value)}
         >
@@ -186,7 +186,7 @@
       {/each}
       <button
         type="button"
-        class={`btn btn-xs shrink-0 ${filters.period === "custom" ? "btn-outline btn-neutral" : "btn-ghost text-zinc-600"}`}
+        class={`shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${filters.period === "custom" ? "border-zinc-800 bg-zinc-900 text-white dark:border-zinc-200 dark:bg-zinc-100 dark:text-zinc-900" : "border-transparent text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"}`}
         aria-pressed={filters.period === "custom"}
         onclick={openCustomDateDialog}
       >
@@ -196,7 +196,7 @@
 
     <button
       type="button"
-      class="btn btn-ghost btn-xs shrink-0 gap-1 px-2 text-zinc-600"
+      class="flex shrink-0 items-center gap-1 rounded-md px-2 py-1.5 text-xs text-zinc-600 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-zinc-400 dark:hover:bg-zinc-800"
       aria-label={t("clearFilters", $language)}
       disabled={!hasActiveFilters}
       onclick={clearFilters}
@@ -221,13 +221,17 @@
   </div>
 </section>
 
-<dialog bind:this={dateDialog} class="modal" onclick={closeOnBackdrop}>
-  <section class="modal-box max-w-sm">
+<dialog
+  bind:this={dateDialog}
+  class="fixed inset-0 m-auto hidden max-h-[85dvh] w-[calc(100%-2rem)] max-w-sm overflow-y-auto rounded-xl border border-zinc-200 bg-white p-5 text-zinc-900 shadow-2xl backdrop:bg-zinc-950/60 backdrop:backdrop-blur-sm open:block dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+  onclick={closeOnBackdrop}
+>
+  <section>
     <header class="mb-5 flex items-center justify-between">
-      <h2 class="text-lg font-semibold text-zinc-900">{t("chooseDateRange", $language)}</h2>
+      <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{t("chooseDateRange", $language)}</h2>
       <button
         type="button"
-        class="btn btn-ghost btn-sm btn-square"
+        class="grid size-9 place-items-center rounded-lg text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
         aria-label={t("closeDateDialog", $language)}
         onclick={() => dateDialog?.close()}
       >
@@ -236,19 +240,19 @@
     </header>
 
     <div class="grid gap-4">
-      <label class="form-control gap-1 text-sm font-medium text-zinc-700">
+      <label class="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
         {t("fromDate", $language)}
         <input
-          class="input input-bordered w-full"
+          class="h-11 w-full rounded-lg border border-zinc-300 bg-white dark:bg-zinc-900 px-3 text-zinc-900 outline-none focus:border-emerald-600 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
           type="date"
           bind:value={draftStartDate}
           max={draftEndDate || undefined}
         />
       </label>
-      <label class="form-control gap-1 text-sm font-medium text-zinc-700">
+      <label class="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
         {t("untilDate", $language)}
         <input
-          class="input input-bordered w-full"
+          class="h-11 w-full rounded-lg border border-zinc-300 bg-white dark:bg-zinc-900 px-3 text-zinc-900 outline-none focus:border-emerald-600 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
           type="date"
           bind:value={draftEndDate}
           min={draftStartDate || undefined}
@@ -259,14 +263,14 @@
     <footer class="mt-6 flex justify-end gap-2">
       <button
         type="button"
-        class="btn btn-ghost"
+        class="rounded-lg px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
         onclick={() => dateDialog?.close()}
       >
         {t("cancel", $language)}
       </button>
       <button
         type="button"
-        class="btn btn-neutral"
+        class="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
         disabled={!draftStartDate || !draftEndDate || draftStartDate > draftEndDate}
         onclick={applyCustomDate}
       >
@@ -274,7 +278,4 @@
       </button>
     </footer>
   </section>
-  <form method="dialog" class="modal-backdrop">
-    <button aria-label={t("closeDateDialog", $language)}>close</button>
-  </form>
 </dialog>

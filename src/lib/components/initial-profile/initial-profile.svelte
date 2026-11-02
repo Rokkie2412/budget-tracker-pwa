@@ -14,9 +14,9 @@
 
 <div class="flex flex-col items-center gap-2">
   <div
-    class="flex size-24 items-center justify-center rounded-full bg-amber-700 text-4xl font-semibold text-primary-content"
+    class="flex size-24 items-center justify-center rounded-full bg-amber-700 text-4xl font-semibold text-white"
   >
     {initials}
   </div>
-  <p class="text-lg font-medium text-base-content">{name}</p>
+  <p class="text-lg font-medium text-zinc-900 dark:text-zinc-100">{name}</p>
 </div>

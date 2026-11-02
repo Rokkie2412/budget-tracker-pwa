@@ -91,14 +91,14 @@
   class="mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-5 pb-4"
 >
   <section class="flex min-h-0 w-full flex-1 flex-col gap-4">
-    <header class="shrink-0 border-b border-zinc-200 pb-4">
-      <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+    <header class="shrink-0 border-b border-zinc-200 dark:border-zinc-700 pb-4">
+      <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
         {t("transactionBookkeeping", $language)}
       </p>
-      <h1 class="mt-1 text-3xl font-bold text-zinc-900">
+      <h1 class="mt-1 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
         {t("reportsTitle", $language)}
       </h1>
-      <p class="mt-1 text-sm text-zinc-500">
+      <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
         {t("reportsDescription", $language)}
       </p>
     </header>
@@ -107,7 +107,7 @@
       <label class="sr-only" for="report-month">{t("reportMonth", $language)}</label>
       <select
         id="report-month"
-        class="select select-bordered min-w-0 bg-white"
+        class="h-11 min-w-0 rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-emerald-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         value={month}
         disabled={isLoading}
         onchange={(event) => changePeriod(year, Number(event.currentTarget.value))}
@@ -120,7 +120,7 @@
       <label class="sr-only" for="report-year">{t("reportYear", $language)}</label>
       <select
         id="report-year"
-        class="select select-bordered w-28 bg-white"
+        class="h-11 w-28 rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-emerald-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         value={year}
         disabled={isLoading}
         onchange={(event) => changePeriod(Number(event.currentTarget.value), month)}
@@ -134,33 +134,33 @@
     <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain" aria-label={monthLabel}>
       {#if isLoading}
         <div class="flex min-h-48 items-center justify-center" role="status" aria-label={t("transactionsLoading", $language)}>
-          <span class="loading loading-spinner loading-lg text-primary"></span>
+          <span class="size-8 animate-spin rounded-full border-2 border-emerald-700 border-r-transparent" aria-hidden="true"></span>
         </div>
       {:else if errorMessage}
         <div class="flex min-h-48 flex-col items-center justify-center gap-3 text-center" role="alert">
           <p class="font-semibold text-red-600">{t("reportLoadFailed", $language)}</p>
-          <p class="text-sm text-zinc-500">{errorMessage}</p>
-          <button type="button" class="btn btn-sm btn-outline" onclick={() => loadReport()}>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400">{errorMessage}</p>
+          <button type="button" class="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800" onclick={() => loadReport()}>
             {t("reportRetry", $language)}
           </button>
         </div>
       {:else if report}
-        <section class="stats stats-vertical mb-5 w-full rounded-lg border border-zinc-200 bg-white shadow-none" aria-label={t("reportsTitle", $language)}>
-        <div class="stat px-4 py-3">
-          <div class="stat-title">{t("reportBalance", $language)}</div>
-          <div class={`stat-value text-2xl ${report.summary.total >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
+        <section class="mb-5 w-full rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900" aria-label={t("reportsTitle", $language)}>
+        <div class="px-4 py-3">
+          <div class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t("reportBalance", $language)}</div>
+          <div class={`text-2xl font-bold ${report.summary.total >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-rose-700 dark:text-rose-300"}`}>
             {formatCurrency(report.summary.total)}
           </div>
         </div>
-        <div class="stat border-t border-zinc-100 px-4 py-3">
-          <div class="stat-title">{t("reportIncome", $language)}</div>
-          <div class="stat-value text-xl text-emerald-700">
+        <div class="border-t border-zinc-100 px-4 py-3 dark:border-zinc-700">
+          <div class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t("reportIncome", $language)}</div>
+          <div class="text-xl font-bold text-emerald-700 dark:text-emerald-300">
             {formatCurrency(report.summary.income)}
           </div>
         </div>
-        <div class="stat border-t border-zinc-100 px-4 py-3">
-          <div class="stat-title">{t("reportExpenses", $language)}</div>
-          <div class="stat-value text-xl text-rose-700">
+        <div class="border-t border-zinc-100 px-4 py-3 dark:border-zinc-700">
+          <div class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t("reportExpenses", $language)}</div>
+          <div class="text-xl font-bold text-rose-700 dark:text-rose-300">
             {formatCurrency(report.summary.expense)}
           </div>
         </div>
@@ -168,7 +168,7 @@
 
         <button
           type="button"
-          class="btn btn-outline mb-5 w-full justify-between border-emerald-200 text-emerald-800"
+          class="mb-5 flex w-full items-center justify-between rounded-lg border border-emerald-200 px-4 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-200 dark:hover:bg-emerald-950"
           onclick={() => goto("/dashboard/monthly-report-detail")}
         >
           {t("viewReportDetails", $language)}
@@ -193,25 +193,25 @@
           },
         ] as section (section.title)}
             <div>
-              <h2 class="mb-1 text-base font-semibold text-zinc-900">{section.title}</h2>
+              <h2 class="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-100">{section.title}</h2>
               {#if section.items.length > 0}
-                <ul class="list w-full divide-y divide-zinc-100">
+                <ul class="w-full divide-y divide-zinc-100 dark:divide-zinc-700">
                   {#each section.items as item (item.category)}
                     <li class="flex items-center justify-between gap-3 py-3">
                       <div class="flex min-w-0 items-center gap-2">
                         <span class="text-lg" aria-hidden="true">{ALL_CATEGORY_EMOJIS[item.category]}</span>
-                        <span class="truncate text-sm font-medium text-zinc-800">
+                        <span class="truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">
                           {formatCategory(item.category)}
                         </span>
                       </div>
-                      <span class="shrink-0 text-sm font-semibold tabular-nums text-zinc-900">
+                      <span class="shrink-0 text-sm font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
                         {formatCurrency(item.total)}
                       </span>
                     </li>
                   {/each}
                 </ul>
               {:else}
-                <p class="border-b border-zinc-100 py-4 text-sm text-zinc-500">
+                <p class="border-b border-zinc-100 dark:border-zinc-700 py-4 text-sm text-zinc-500 dark:text-zinc-400">
                   {section.empty}
                 </p>
               {/if}

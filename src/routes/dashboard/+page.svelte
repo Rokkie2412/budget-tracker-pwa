@@ -248,12 +248,12 @@
   class="mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-5 pb-4"
 >
   <section class="flex min-h-0 w-full flex-1 flex-col gap-4">
-    <header class="flex shrink-0 items-end justify-between gap-3 border-b border-zinc-200 bg-base-100 pb-4">
+    <header class="flex shrink-0 items-end justify-between gap-3 border-b border-zinc-200 bg-white pb-4 dark:border-zinc-700 dark:bg-zinc-900">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+        <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
           {t("transactionBookkeeping", $language)}
         </p>
-        <h1 class="mt-1 text-3xl font-bold text-zinc-900">
+        <h1 class="mt-1 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
           {t("dashboardTitle", $language)}
         </h1>
       </div>
@@ -262,57 +262,57 @@
     <div class="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain pb-6">
       {#if isLoading}
       <div class="flex min-h-64 flex-1 items-center justify-center" role="status" aria-label={t("transactionsLoading", $language)}>
-        <span class="loading loading-spinner loading-lg text-primary"></span>
+        <span class="size-8 animate-spin rounded-full border-2 border-emerald-700 border-r-transparent" aria-hidden="true"></span>
       </div>
     {:else if errorMessage}
       <div class="flex min-h-64 flex-col items-center justify-center gap-3 text-center" role="alert">
         <p class="font-semibold text-red-600">{t("dashboardLoadFailed", $language)}</p>
-        <p class="text-sm text-zinc-500">{errorMessage}</p>
-        <button type="button" class="btn btn-sm btn-outline" onclick={() => loadDashboard()}>
+        <p class="text-sm text-zinc-500 dark:text-zinc-400">{errorMessage}</p>
+        <button type="button" class="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800" onclick={() => loadDashboard()}>
           {t("dashboardRetry", $language)}
         </button>
       </div>
     {:else if report}
-      <section class={`stats stats-vertical w-full overflow-hidden rounded-lg border shadow-none ${report.summary.total >= 0 ? "border-emerald-200 bg-emerald-50" : "border-rose-200 bg-rose-50"}`} aria-label={t("reportBalance", $language)}>
-        <div class="stat px-4 py-4">
-          <div class={`stat-title ${report.summary.total >= 0 ? "text-emerald-800" : "text-rose-800"}`}>
+      <section class={`w-full overflow-hidden rounded-lg border ${report.summary.total >= 0 ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950" : "border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-950"}`} aria-label={t("reportBalance", $language)}>
+        <div class="px-4 py-4">
+          <div class={`text-sm font-medium ${report.summary.total >= 0 ? "text-emerald-800 dark:text-emerald-200" : "text-rose-800 dark:text-rose-200"}`}>
             {t("reportBalance", $language)}
           </div>
-          <div class={`stat-value break-all text-3xl ${report.summary.total >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
+          <div class={`break-all text-3xl font-bold ${report.summary.total >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-rose-700 dark:text-rose-300"}`}>
             {formatCurrency(report.summary.total)}
           </div>
         </div>
       </section>
 
       <section class="grid grid-cols-2 gap-3" aria-label={t("dashboardDescription", $language)}>
-        <article class="stat min-w-0 rounded-lg border border-rose-100 bg-rose-50/70 px-3 py-3 shadow-none">
-          <div class="stat-title truncate text-rose-800">{t("reportExpenses", $language)}</div>
-          <div class="stat-value text-lg text-rose-700">{formatCurrency(report.summary.expense)}</div>
+        <article class="min-w-0 rounded-lg border border-rose-100 dark:border-rose-800 bg-rose-50/70 dark:bg-rose-950/70 px-3 py-3 dark:border-rose-900 dark:bg-rose-950/60">
+          <div class="truncate text-sm font-medium text-rose-800 dark:text-rose-200">{t("reportExpenses", $language)}</div>
+          <div class="text-lg font-bold text-rose-700 dark:text-rose-300">{formatCurrency(report.summary.expense)}</div>
         </article>
-        <article class="stat min-w-0 rounded-lg border border-emerald-100 bg-emerald-50/70 px-3 py-3 shadow-none">
-          <div class="stat-title truncate text-emerald-800">{t("reportIncome", $language)}</div>
-          <div class="stat-value text-lg text-emerald-700">{formatCurrency(report.summary.income)}</div>
+        <article class="min-w-0 rounded-lg border border-emerald-100 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/70 px-3 py-3 dark:border-emerald-900 dark:bg-emerald-950/60">
+          <div class="truncate text-sm font-medium text-emerald-800 dark:text-emerald-200">{t("reportIncome", $language)}</div>
+          <div class="text-lg font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(report.summary.income)}</div>
         </article>
       </section>
 
-      <section class="space-y-4 rounded-lg border border-sky-100 bg-sky-50/50 p-3 pb-4" aria-label={t("dashboardCashflowChart", $language)}>
+      <section class="space-y-4 rounded-lg border border-sky-100 dark:border-sky-800 bg-sky-50/50 p-3 pb-4 dark:border-sky-900 dark:bg-sky-950/50" aria-label={t("dashboardCashflowChart", $language)}>
         <div>
-          <h2 class="text-base font-semibold text-sky-950">
+          <h2 class="text-base font-semibold text-sky-950 dark:text-sky-100">
             {t("dashboardCashflowChart", $language)}
           </h2>
-          <p class="text-xs text-zinc-500">{monthLabel}</p>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400">{monthLabel}</p>
         </div>
 
-        <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs font-medium text-zinc-700">
-          <span class="badge badge-success badge-soft h-auto gap-2 py-1.5">
+        <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+          <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-2.5 py-1.5 text-xs text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">
             <span class="size-2.5 rounded-full bg-emerald-600" aria-hidden="true"></span>
             {t("reportIncome", $language)}
-            <span class="tabular-nums text-zinc-900">{compactCurrency.format(report.summary.income)}</span>
+            <span class="tabular-nums text-zinc-900 dark:text-zinc-100">{compactCurrency.format(report.summary.income)}</span>
           </span>
-          <span class="badge badge-error badge-soft h-auto gap-2 py-1.5">
+          <span class="inline-flex items-center gap-2 rounded-full bg-rose-100 px-2.5 py-1.5 text-xs text-rose-900 dark:bg-rose-950 dark:text-rose-100">
             <span class="size-2.5 rounded-full bg-rose-600" aria-hidden="true"></span>
             {t("reportExpenses", $language)}
-            <span class="tabular-nums text-zinc-900">{compactCurrency.format(report.summary.expense)}</span>
+            <span class="tabular-nums text-zinc-900 dark:text-zinc-100">{compactCurrency.format(report.summary.expense)}</span>
           </span>
         </div>
 
@@ -359,27 +359,27 @@
             </svg>
           </div>
         {:else}
-          <p class="py-6 text-center text-sm text-zinc-500">
+          <p class="py-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
             {t("dashboardNoCategoryData", $language)}
           </p>
         {/if}
 
-        <div class="space-y-3 border-t border-sky-100 pt-3">
-          <h3 class="text-sm font-semibold text-sky-950">
+        <div class="space-y-3 border-t border-sky-100 dark:border-sky-800 pt-3 dark:border-sky-900">
+          <h3 class="text-sm font-semibold text-sky-950 dark:text-sky-100">
             {t("dashboardCategoryBreakdown", $language)}
           </h3>
           {#each [
-            { title: t("reportIncome", $language), items: report.categories.income, color: "text-emerald-700" },
-            { title: t("reportExpenses", $language), items: report.categories.expenses, color: "text-rose-700" },
+            { title: t("reportIncome", $language), items: report.categories.income, color: "text-emerald-700 dark:text-emerald-300" },
+            { title: t("reportExpenses", $language), items: report.categories.expenses, color: "text-rose-700 dark:text-rose-300" },
           ] as categoryGroup (categoryGroup.title)}
-            <details class={`collapse collapse-arrow rounded-md border ${categoryGroup.title === t("reportIncome", $language) ? "border-emerald-100 bg-emerald-50/50" : "border-rose-100 bg-rose-50/50"}`}>
-              <summary class="collapse-title min-h-0 px-3 py-2 text-sm font-medium">
+            <details class={`rounded-md border ${categoryGroup.title === t("reportIncome", $language) ? "border-emerald-100 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/50 dark:border-emerald-900 dark:bg-emerald-950/40" : "border-rose-100 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/50 dark:border-rose-900 dark:bg-rose-950/40"}`}>
+              <summary class="cursor-pointer px-3 py-2 text-sm font-medium">
                 {categoryGroup.title}
               </summary>
-              <ul class="collapse-content divide-y divide-zinc-100 px-3">
+              <ul class="divide-y divide-zinc-100 px-3 dark:divide-zinc-700">
                 {#each categoryGroup.items as item (item.category)}
                   <li class="flex items-center justify-between gap-3 py-2 text-sm">
-                    <span class="truncate text-zinc-700">
+                    <span class="truncate text-zinc-700 dark:text-zinc-300">
                       {ALL_CATEGORY_EMOJIS[item.category]} {formatCategory(item.category)}
                     </span>
                     <span class={`shrink-0 font-medium tabular-nums ${categoryGroup.color}`}>
@@ -387,7 +387,7 @@
                     </span>
                   </li>
                 {:else}
-                  <li class="py-2 text-sm text-zinc-500">
+                  <li class="py-2 text-sm text-zinc-500 dark:text-zinc-400">
                     {t("dashboardNoCategoryData", $language)}
                   </li>
                 {/each}
@@ -399,27 +399,27 @@
 
       <section class="pb-2" aria-label={t("dashboardMonthlyTransactions", $language)}>
         <header class="mb-2 flex items-center justify-between gap-3">
-          <h2 class="text-base font-semibold text-zinc-900">
+          <h2 class="text-base font-semibold text-zinc-900 dark:text-zinc-100">
             {t("dashboardMonthlyTransactions", $language)}
           </h2>
-          <span class="text-xs tabular-nums text-zinc-500">
+          <span class="text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
             {transactionPagination?.totalTransactions ?? 0}
           </span>
         </header>
 
         {#if transactionLoading}
           <div class="flex min-h-32 items-center justify-center" role="status" aria-label={t("transactionsLoading", $language)}>
-            <span class="loading loading-spinner loading-md text-primary"></span>
+            <span class="size-6 animate-spin rounded-full border-2 border-emerald-700 border-r-transparent" aria-hidden="true"></span>
           </div>
         {:else if transactionError}
           <div class="flex flex-col items-center gap-2 py-6 text-center" role="alert">
-            <p class="text-sm text-zinc-500">{transactionError}</p>
-            <button type="button" class="btn btn-ghost btn-sm" onclick={() => loadTransactions(1)}>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">{transactionError}</p>
+            <button type="button" class="rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800" onclick={() => loadTransactions(1)}>
               {t("retry", $language)}
             </button>
           </div>
         {:else if transactions.length > 0}
-          <ul class="divide-y divide-zinc-100">
+          <ul class="divide-y divide-zinc-100 dark:divide-zinc-700">
             {#each transactions as transaction (transaction._id)}
               <li class="py-1">
                 <TransactionCard
@@ -436,8 +436,8 @@
           </ul>
 
           {#if transactionPagination}
-            <footer class="mt-2 flex items-center justify-between border-t border-zinc-200 pt-2">
-              <p class="text-xs text-zinc-500">
+            <footer class="mt-2 flex items-center justify-between border-t border-zinc-200 dark:border-zinc-700 pt-2">
+              <p class="text-xs text-zinc-500 dark:text-zinc-400">
                 {t("paginationPageSummary", $language)
                   .replace("{page}", String(transactionPagination.page))
                   .replace("{total}", String(transactionPagination.totalPages))}
@@ -450,7 +450,7 @@
             </footer>
           {/if}
         {:else}
-          <p class="py-6 text-center text-sm text-zinc-500">
+          <p class="py-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
             {t("transactionsEmptyTitle", $language)}
           </p>
         {/if}

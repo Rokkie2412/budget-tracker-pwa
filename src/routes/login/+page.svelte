@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { validator } from "@felte/validator-yup";
 	import { createForm } from "felte";
+	import * as yup from "yup";
 
 	import { goto } from "$app/navigation";
 
@@ -7,14 +9,27 @@
 	import { setAuth } from "../../lib/services/auth";
 	import { loadingMask, setLoadingMask, showToast, t } from "../../stores";
 	import {
-		handleSubmit,
 		keyErrorMapper,
 		normalizePhoneNumber,
 		onSubmitLogin,
 	} from "./login.handlers";
 	import type { LoginRes } from "./login.types";
 
-	const { form } = createForm({
+	const loginSchema = yup.object({
+		phone: yup
+			.string()
+			.required(t("fieldRequired"))
+			.test("valid-phone", t("invalidPhoneNumber"), (value) => {
+				const digitCount = value?.replace(/\D/g, "").length ?? 0;
+				return digitCount >= 5 && digitCount <= 15;
+			}),
+		phoneCountry: yup.string().required(t("fieldRequired")),
+		phoneCallingCode: yup.string().required(t("fieldRequired")),
+		password: yup.string().required(t("fieldRequired")),
+	});
+
+	const { form, errors } = createForm<yup.InferType<typeof loginSchema>>({
+		extend: validator({ schema: loginSchema }),
 		onSubmit: async (values) => {
 			const phone = normalizePhoneNumber(values.phone, values.phoneCallingCode);
 
@@ -44,13 +59,13 @@
 	<meta name="theme-color" content="#f4f4f5" />
 </svelte:head>
 
-<main class="min-h-dvh bg-zinc-100">
+<main class="min-h-dvh bg-zinc-100 dark:bg-zinc-800">
 	{#if $loadingMask}
 		<LoadingMask text={t("loading")} />
 	{/if}
 
 	<article
-		class="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-white shadow-xl shadow-zinc-900/5"
+		class="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-white shadow-xl shadow-zinc-900/5 dark:bg-zinc-900"
 	>
 		<!-- HEADER -->
 		<header
@@ -62,7 +77,7 @@
 				aria-label={t("homeLabel")}
 			>
 				<span
-					class="grid size-10 place-items-center rounded-xl bg-zinc-100 text-zinc-900"
+					class="grid size-10 place-items-center rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
 				>
 					<svg
 						aria-hidden="true"
@@ -133,15 +148,15 @@
 			class="flex flex-1 flex-col px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-8"
 		>
 			<header class="mb-6">
-				<h2 class="text-2xl font-bold tracking-tight text-base-content">
+				<h2 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
 					{t("signIn")}
 				</h2>
-				<p class="mt-1.5 text-sm text-base-content/60">
+				<p class="mt-1.5 text-sm text-zinc-600 dark:text-zinc-400">
 					{t("signInDescription")}
 				</p>
 			</header>
 
-			<form use:form class="space-y-5" onsubmit={handleSubmit}>
+			<form use:form class="space-y-5" novalidate>
 				<InputForm
 					id="phone"
 					label={t("phoneNumber")}
@@ -149,6 +164,9 @@
 					placeholder={t("phonePlaceholder")}
 					showNumberDropdown
 				/>
+				{#if $errors.phone?.[0]}
+					<p class="-mt-3 text-sm text-rose-700" role="alert">{$errors.phone[0]}</p>
+				{/if}
 				<InputForm
 					id="password"
 					label={t("password")}
@@ -156,19 +174,22 @@
 					placeholder={t("passwordPlaceholder")}
 					showPasswordToggle
 				/>
+				{#if $errors.password?.[0]}
+					<p class="-mt-3 text-sm text-rose-700" role="alert">{$errors.password[0]}</p>
+				{/if}
 
 				<section
 					aria-label={t("signInOptions")}
 					class="flex items-center justify-end gap-3"
 				>
-					<span class="text-sm font-medium text-zinc-900"
+					<span class="text-sm font-medium text-zinc-900 dark:text-zinc-100"
 						>{t("forgotPassword")}</span
 					>
 				</section>
 
 				<button
 					type="submit"
-					class="btn h-12 w-full rounded-xl border-zinc-900 bg-zinc-900 text-base font-semibold text-white hover:border-zinc-800 hover:bg-zinc-800"
+					class="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
 				>
 					{t("signIn")}
 					<svg
@@ -188,15 +209,15 @@
 					</svg>
 				</button>
 
-				<p class="text-center text-sm text-base-content/60">
+				<p class="text-center text-sm text-zinc-600 dark:text-zinc-400">
 					{t("newToDompet")}
-					<span class="font-semibold text-zinc-900">{t("createAccount")}</span>
+					<span class="font-semibold text-zinc-900 dark:text-zinc-100">{t("createAccount")}</span>
 				</p>
 			</form>
 
 			<!-- FOOTER -->
 			<footer
-				class="mt-auto pt-8 text-center text-xs leading-5 text-base-content/50"
+				class="mt-auto pt-8 text-center text-xs leading-5 text-zinc-500 dark:text-zinc-400"
 			>
 				{t("privacyNotice")}
 			</footer>

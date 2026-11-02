@@ -108,14 +108,12 @@
 
       <!-- Ambient glow -->
       <div
-        class="absolute h-36 w-36 rounded-full blur-2xl"
-        style="background-color: {BASE_COLOR}; opacity: 0.12;"
+        class="absolute h-36 w-36 rounded-full bg-zinc-900/10 blur-2xl"
       ></div>
 
       <!-- Shield plate -->
       <div
-        class="relative flex h-24 w-24 items-center justify-center rounded-3xl shadow-lg"
-        style="background-color: {BASE_COLOR};"
+        class="relative flex h-24 w-24 items-center justify-center rounded-3xl bg-zinc-900 shadow-lg"
       >
         <!-- Inner glass ring -->
         <div
@@ -141,7 +139,7 @@
         <div
           class="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-red-500"
         >
-          <div class="h-1.5 w-1.5 rounded-full bg-white"></div>
+          <div class="h-1.5 w-1.5 rounded-full bg-white dark:bg-zinc-900"></div>
         </div>
       </div>
     </div>
@@ -153,7 +151,7 @@
       class="mb-2.5 flex flex-row items-center gap-1.5 rounded-full border border-zinc-900/15 bg-zinc-900/10 px-3 py-1"
     >
       <div class="h-2 w-2 rounded-full bg-red-500"></div>
-      <span class="text-xs font-semibold tracking-wider text-zinc-900">
+      <span class="text-xs font-semibold tracking-wider text-zinc-900 dark:text-zinc-100">
         {typeof errorCode === "number" ? `CODE ${errorCode}` : errorCode}
       </span>
     </div>
@@ -161,14 +159,14 @@
 
   <!-- Title -->
   <h2
-    class="mb-2 mt-2 text-center text-2xl font-bold tracking-tight text-zinc-900"
+    class="mb-2 mt-2 text-center text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100"
   >
     {resolvedTitle}
   </h2>
 
   <!-- Description -->
   <p
-    class="mb-6 max-w-xs text-center text-sm font-medium leading-relaxed text-zinc-500"
+    class="mb-6 max-w-xs text-center text-sm font-medium leading-relaxed text-zinc-500 dark:text-zinc-400"
   >
     {resolvedDescription}
   </p>
@@ -207,7 +205,7 @@
       <button
         type="button"
         onclick={onSecondaryAction}
-        class="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-transparent text-sm font-semibold text-zinc-900 transition-opacity hover:bg-zinc-50 active:opacity-70"
+        class="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-transparent text-sm font-semibold text-zinc-900 dark:text-zinc-100 transition-opacity hover:bg-zinc-50 active:opacity-70"
       >
         <!-- ArrowLeft icon -->
         <svg

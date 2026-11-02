@@ -16,15 +16,15 @@
   }: Props = $props();
 </script>
 
-<article class="card w-full border-zinc-300 bg-white">
-  <div class="card-body flex-row items-center justify-between px-3 py-2.5">
+<article class="w-full border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+  <div class="flex items-center justify-between gap-3 px-3 py-2.5">
     <div class="flex min-w-0 items-center gap-1 sm:gap-4">
       <div class="min-w-0">
-        <h2 class="card-title truncate text-base font-semibold text-zinc-800">
+        <h2 class="truncate text-base font-semibold text-zinc-800 dark:text-zinc-200">
           {title}
         </h2>
         <p
-          class="mt-1 flex items-center gap-1 truncate text-sm leading-5 text-zinc-500"
+          class="mt-1 flex items-center gap-1 truncate text-sm leading-5 text-zinc-500 dark:text-zinc-400"
         >
           {category ? t(getCategoryTranslationKey(category), $language) : ""}
           {getCategoryEmoji(category, type)} • {date}
@@ -34,23 +34,23 @@
 
     {#if amount}
       <p
-        class={`shrink-0 text-right text-sm font-bold tabular-nums ${type === "IN" ? "text-emerald-700" : "text-red-700"}`}
+        class={`shrink-0 text-right text-sm font-bold tabular-nums ${type === "IN" ? "text-emerald-700 dark:text-emerald-300" : "text-red-700"}`}
       >
         {amount}
       </p>
     {/if}
 
     {#if onDelete}
-      <div class="card-actions shrink-0">
+      <div class="shrink-0">
         <button
           type="button"
-          class="btn btn-ghost btn-square btn-sm text-zinc-500 hover:bg-rose-50 hover:text-rose-700"
+          class="grid size-9 place-items-center rounded-lg text-zinc-500 transition-colors hover:bg-rose-50 hover:text-rose-700 dark:text-zinc-400 dark:hover:bg-rose-950 dark:hover:text-rose-300"
           aria-label={t(isDeleting ? "deletingTransaction" : "deleteTransaction", $language).replace("{title}", title)}
           disabled={isDeleting}
           onclick={onDelete}
         >
           {#if isDeleting}
-            <span class="loading loading-spinner loading-sm" aria-hidden="true"></span>
+            <span class="size-4 animate-spin rounded-full border-2 border-current border-r-transparent" aria-hidden="true"></span>
           {:else}
             <svg
             aria-hidden="true"

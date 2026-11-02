@@ -35,10 +35,6 @@ export const onSubmitLogin = async (phone: string, password: string) => {
   return result;
 };
 
-export const handleSubmit = (event: SubmitEvent) => {
-  event.preventDefault();
-};
-
 export const normalizePhoneNumber = (phone: string, phoneCallingCode: string): string => {
   const phoneDigits = phone.replace(/\D/g, '');
   const isInternational = /^(?:\+|00)/.test(phone.trim());

@@ -9,7 +9,7 @@
   const dispatch = createEventDispatcher<{ pageChange: number }>();
 
   const btnClass =
-    "w-10 h-10 flex justify-center items-center border-none bg-transparent rounded-md cursor-pointer text-zinc-900 transition-colors duration-150 hover:bg-zinc-900/8 disabled:opacity-35 disabled:cursor-not-allowed";
+    "w-10 h-10 flex justify-center items-center border-none bg-transparent rounded-md cursor-pointer text-zinc-900 dark:text-zinc-100 transition-colors duration-150 hover:bg-zinc-900/8 disabled:opacity-35 disabled:cursor-not-allowed";
 </script>
 
 <div class="flex flex-row items-center justify-center gap-2">
@@ -36,7 +36,7 @@
   </button>
 
   <span
-    class="text-[0.925rem] font-semibold text-zinc-900 min-w-16 text-center"
+    class="text-[0.925rem] font-semibold text-zinc-900 dark:text-zinc-100 min-w-16 text-center"
   >
     {displayPage} / {totalPages}
   </span>

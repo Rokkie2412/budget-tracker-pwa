@@ -1,4 +1,8 @@
 <script lang="ts">
+  import { validator } from "@felte/validator-yup";
+  import { createForm } from "felte";
+  import * as yup from "yup";
+
   import {
     BUDGET_CATEGORIES_EXPENSE,
     BUDGET_CATEGORIES_INCOME,
@@ -11,16 +15,104 @@
   import { language, t } from "@/stores/translation";
   import type { Category } from "@/types";
 
+  const transactionSchema = yup.object({
+    type: yup.mixed<"IN" | "OUT">().oneOf(["IN", "OUT"]).required(),
+    amount: yup
+      .string()
+      .required(t("fieldRequired"))
+      .matches(/^[1-9]\d*$/, t("invalidTransactionAmount")),
+    description: yup
+      .string()
+      .trim()
+      .max(200, t("invalidTransactionDescription"))
+      .required(t("invalidTransactionDescription")),
+    category: yup
+      .mixed<Category>()
+      .oneOf([...BUDGET_CATEGORIES_EXPENSE, ...BUDGET_CATEGORIES_INCOME])
+      .required(t("fieldRequired")),
+    date: yup
+      .string()
+      .required(t("invalidTransactionDate"))
+      .test("valid-date", t("invalidTransactionDate"), (value) => {
+        if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+        const [year, month, day] = value.split("-").map(Number);
+        const parsedDate = new Date(Date.UTC(year, month - 1, day));
+        return (
+          parsedDate.getUTCFullYear() === year &&
+          parsedDate.getUTCMonth() === month - 1 &&
+          parsedDate.getUTCDate() === day
+        );
+      }),
+  });
+
+  type TransactionFormValues = yup.InferType<typeof transactionSchema>;
+
+  const initialTransactionValues = (): TransactionFormValues => ({
+    type: "OUT",
+    amount: "",
+    description: "",
+    category: BUDGET_CATEGORIES_EXPENSE[0],
+    date: new Date().toISOString().slice(0, 10),
+  });
+
   let dialog = $state<HTMLDialogElement>();
-  let transactionType = $state<"IN" | "OUT">("OUT");
-  let amount = $state("");
-  let description = $state("");
-  let category = $state<Category>(BUDGET_CATEGORIES_EXPENSE[0]);
-  let date = $state(new Date().toISOString().slice(0, 10));
   let isSaving = $state(false);
 
+  const { form, data, errors, setFields, reset } =
+    createForm<TransactionFormValues>({
+      initialValues: initialTransactionValues(),
+      extend: validator({ schema: transactionSchema }),
+      onSubmit: async (values) => {
+        if (isSaving) return;
+        isSaving = true;
+
+        try {
+          const authData = await checkAuth();
+          if (!authData) throw new Error(t("invalidCredentials", $language));
+
+          const [year, month, day] = values.date.split("-").map(Number);
+          const transactionDate = new Date(
+            year,
+            month - 1,
+            day,
+            12,
+          ).toISOString();
+          const response = await fetch(`${apiBaseUrl}/api/transactions-list`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authData.jwtToken}`,
+            },
+            body: JSON.stringify({
+              amount: Number(values.amount),
+              description: values.description.trim(),
+              type: values.type,
+              category: values.category,
+              date: transactionDate,
+            }),
+          });
+
+          if (!response.ok)
+            throw new Error(t("transactionCreateFailed", $language));
+
+          showToast(t("transactionCreateSuccess", $language), "success");
+          notifyTransactionsChanged();
+          closeDialog();
+        } catch (error) {
+          showToast(
+            error instanceof Error
+              ? error.message
+              : t("transactionCreateFailed", $language),
+            "error",
+          );
+        } finally {
+          isSaving = false;
+        }
+      },
+    });
+
   const categories = $derived(
-    transactionType === "IN"
+    $data.type === "IN"
       ? BUDGET_CATEGORIES_INCOME
       : BUDGET_CATEGORIES_EXPENSE,
   );
@@ -30,11 +122,8 @@
   };
 
   const resetForm = () => {
-    transactionType = "OUT";
-    amount = "";
-    description = "";
-    category = BUDGET_CATEGORIES_EXPENSE[0];
-    date = new Date().toISOString().slice(0, 10);
+    reset();
+    setFields(initialTransactionValues());
   };
 
   const closeDialog = () => {
@@ -43,62 +132,18 @@
   };
 
   const changeType = (type: "IN" | "OUT") => {
-    transactionType = type;
-    category =
+    setFields("type", type);
+    setFields("category",
       type === "IN"
         ? BUDGET_CATEGORIES_INCOME[0]
-        : BUDGET_CATEGORIES_EXPENSE[0];
-  };
-
-  const saveTransaction = async (event: SubmitEvent) => {
-    event.preventDefault();
-    if (isSaving) return;
-    isSaving = true;
-
-    try {
-      const authData = await checkAuth();
-      if (!authData) throw new Error(t("invalidCredentials", $language));
-
-      const [year, month, day] = date.split("-").map(Number);
-      const transactionDate = new Date(year, month - 1, day, 12).toISOString();
-      const response = await fetch(`${apiBaseUrl}/api/transactions-list`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authData.jwtToken}`,
-        },
-        body: JSON.stringify({
-          amount: Number(amount),
-          description: description.trim(),
-          type: transactionType,
-          category,
-          date: transactionDate,
-        }),
-      });
-
-      if (!response.ok)
-        throw new Error(t("transactionCreateFailed", $language));
-
-      showToast(t("transactionCreateSuccess", $language), "success");
-      notifyTransactionsChanged();
-      closeDialog();
-    } catch (error) {
-      showToast(
-        error instanceof Error
-          ? error.message
-          : t("transactionCreateFailed", $language),
-        "error",
-      );
-    } finally {
-      isSaving = false;
-    }
+        : BUDGET_CATEGORIES_EXPENSE[0]);
   };
 </script>
 
 <div class="flex h-16 min-w-0 items-center justify-center">
   <button
     type="button"
-    class="relative z-[60] grid size-14 shrink-0 place-items-center rounded-full border-4 border-base-100 bg-emerald-700 text-white shadow-lg shadow-emerald-900/25 transition-transform active:scale-95"
+    class="relative z-[60] grid size-14 shrink-0 place-items-center rounded-full border-4 border-white bg-emerald-700 text-white shadow-lg shadow-emerald-900/25 transition-transform active:scale-95 dark:border-zinc-900"
     aria-label={t("addTransaction", $language)}
     title={t("addTransaction", $language)}
     onclick={openDialog}
@@ -117,14 +162,17 @@
   </button>
 </div>
 
-<dialog bind:this={dialog} class="add-transaction-dialog">
+<dialog
+  bind:this={dialog}
+  class="fixed inset-0 m-auto hidden h-full max-h-none w-full max-w-none items-center justify-center overflow-hidden border-0 bg-transparent p-[max(1rem,env(safe-area-inset-top))_1rem_max(1rem,env(safe-area-inset-bottom))] text-current backdrop:bg-zinc-950/60 backdrop:backdrop-blur-sm open:flex"
+>
   <button
     type="button"
-    class="absolute inset-0 z-0 cursor-default bg-zinc- 950/50 backdrop-blur-sm"
+    class="absolute inset-0 z-0 cursor-default bg-zinc-950/50 backdrop-blur-sm"
     aria-label={t("cancel", $language)}
     onclick={closeDialog}
   ></button>
-  <section class="add-transaction-sheet relative z-10 px-5 pt-4">
+  <section class="relative z-10 max-h-[86dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border border-zinc-200 bg-white px-5 pt-4 pb-5 text-zinc-900 shadow-2xl dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
     <header class="mb-5 flex items-center justify-between gap-3">
       <div class="flex min-w-0 items-center gap-3">
         <div
@@ -144,17 +192,17 @@
           </svg>
         </div>
         <div class="min-w-0">
-          <p class="text-xs font-semibold uppercase text-emerald-700">
+          <p class="text-xs font-semibold uppercase text-emerald-700 dark:text-emerald-300">
             {t("transactionBookkeeping", $language)}
           </p>
-          <h2 class="truncate text-xl font-bold text-base-content">
+          <h2 class="truncate text-xl font-bold text-zinc-900 dark:text-zinc-100">
             {t("addTransactionTitle", $language)}
           </h2>
         </div>
       </div>
       <button
         type="button"
-        class="btn btn-ghost btn-sm btn-square"
+        class="grid size-9 shrink-0 place-items-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
         aria-label={t("cancel", $language)}
         onclick={closeDialog}
       >
@@ -172,70 +220,76 @@
       </button>
     </header>
 
-    <form class="space-y-4 gap-4" onsubmit={saveTransaction}>
+    <form use:form class="space-y-4 gap-4" novalidate>
       <fieldset
-        class="join grid grid-cols-2"
+        class="grid grid-cols-2 overflow-hidden rounded-lg"
         aria-label={t("transactionType", $language)}
       >
         <label
-          class={`btn join-item ${transactionType === "OUT" ? "btn-error" : "btn-ghost border border-base-300"}`}
+          class={`flex min-h-11 items-center justify-center border px-3 text-sm font-semibold transition-colors ${$data.type === "OUT" ? "border-rose-700 bg-rose-700 text-white" : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"}`}
         >
           <input
             type="radio"
-            name="new-transaction-type"
+            name="type"
+            value="OUT"
             class="sr-only"
-            checked={transactionType === "OUT"}
+            checked={$data.type === "OUT"}
             onchange={() => changeType("OUT")}
           />
           {t("transactionOut", $language)}
         </label>
         <label
-          class={`btn join-item ${transactionType === "IN" ? "btn-success" : "btn-ghost border border-base-300"}`}
+          class={`flex min-h-11 items-center justify-center border px-3 text-sm font-semibold transition-colors ${$data.type === "IN" ? "border-emerald-700 bg-emerald-700 text-white" : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"}`}
         >
           <input
             type="radio"
-            name="new-transaction-type"
+            name="type"
+            value="IN"
             class="sr-only"
-            checked={transactionType === "IN"}
+            checked={$data.type === "IN"}
             onchange={() => changeType("IN")}
           />
           {t("transactionIn", $language)}
         </label>
       </fieldset>
 
-      <label class="form-control gap-1.5">
-        <span class="text-sm font-semibold text-base-content"
+      <label class="flex flex-col gap-1.5">
+        <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-200"
           >{t("transactionAmount", $language)}</span
         >
         <input
-          class="input input-bordered w-full"
+          class="h-12 w-full rounded-lg border border-zinc-300 bg-white dark:bg-zinc-900 px-3 text-zinc-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
           type="number"
+          name="amount"
           min="1"
           step="1"
           inputmode="decimal"
-          bind:value={amount}
-          required
         />
       </label>
+      {#if $errors.amount?.[0]}
+        <p class="-mt-3 text-sm text-rose-700 dark:text-rose-300" role="alert">{$errors.amount[0]}</p>
+      {/if}
 
-      <label class="form-control gap-1.5">
-        <span class="text-sm font-semibold text-base-content"
+      <label class="flex flex-col gap-1.5">
+        <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-200"
           >{t("transactionDescription", $language)}</span
         >
         <input
-          class="input input-bordered w-full"
+          class="h-12 w-full rounded-lg border border-zinc-300 bg-white dark:bg-zinc-900 px-3 text-zinc-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
           type="text"
+          name="description"
           maxlength="200"
-          bind:value={description}
-          required
         />
       </label>
+      {#if $errors.description?.[0]}
+        <p class="-mt-3 text-sm text-rose-700 dark:text-rose-300" role="alert">{$errors.description[0]}</p>
+      {/if}
 
-      <label class="form-control gap-1.5">
-        <span class="text-sm font-semibold text-base-content"
+      <label class="flex flex-col gap-1.5">
+        <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-200"
           >{t("transactionCategory", $language)}</span
         >
-        <select class="select select-bordered w-full" bind:value={category}>
+        <select name="category" class="h-12 w-full rounded-lg border border-zinc-300 bg-white dark:bg-zinc-900 px-3 text-zinc-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100">
           {#each categories as option (option)}
             <option value={option}
               >{t(getCategoryTranslationKey(option), $language)}</option
@@ -244,25 +298,27 @@
         </select>
       </label>
 
-      <label class="form-control gap-1.5">
-        <span class="text-sm font-semibold text-base-content"
+      <label class="flex flex-col gap-1.5">
+        <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-200"
           >{t("transactionDate", $language)}</span
         >
         <input
-          class="input input-bordered w-full"
+          class="h-12 w-full rounded-lg border border-zinc-300 bg-white dark:bg-zinc-900 px-3 text-zinc-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
           type="date"
-          bind:value={date}
-          required
+          name="date"
         />
       </label>
+      {#if $errors.date?.[0]}
+        <p class="-mt-3 text-sm text-rose-700 dark:text-rose-300" role="alert">{$errors.date[0]}</p>
+      {/if}
 
       <button
         type="submit"
-        class={`btn w-full ${transactionType === "IN" ? "btn-success" : "btn-error"}`}
+        class={`flex h-12 w-full items-center justify-center rounded-lg px-4 font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${$data.type === "IN" ? "bg-emerald-700 hover:bg-emerald-800" : "bg-rose-700 hover:bg-rose-800"}`}
         disabled={isSaving}
       >
         {#if isSaving}
-          <span class="loading loading-spinner loading-sm"></span>
+          <span class="size-5 animate-spin rounded-full border-2 border-current border-r-transparent" aria-label={t("loading", $language)}></span>
         {:else}
           {t("saveTransaction", $language)}
         {/if}
@@ -270,66 +326,3 @@
     </form>
   </section>
 </dialog>
-
-<style>
-  .add-transaction-dialog {
-    position: fixed;
-    inset: 0;
-    display: none;
-    width: 100%;
-    max-width: none;
-    height: 100%;
-    max-height: none;
-    margin: 0;
-    padding: max(1rem, env(safe-area-inset-top)) 1rem
-      max(1rem, env(safe-area-inset-bottom));
-    box-sizing: border-box;
-    overflow: hidden;
-    border: 0;
-    color: inherit;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 24px 70px rgb(9 9 11 / 0.24);
-  }
-
-  .add-transaction-dialog[open] {
-    display: flex;
-  }
-
-  .add-transaction-dialog::backdrop {
-    background: transparent;
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(6px);
-  }
-
-  .add-transaction-sheet {
-    width: min(100%, 28rem);
-    max-height: 86dvh;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    border: 1px solid var(--color-base-300);
-    border-radius: 1.25rem;
-    background: var(--color-base-100);
-    color: var(--color-base-content);
-    padding-bottom: 1.25rem;
-    box-shadow: 0 24px 70px rgb(9 9 11 / 0.24);
-    animation: add-dialog-enter 180ms ease-out both;
-  }
-
-  @keyframes add-dialog-enter {
-    from {
-      opacity: 0;
-      transform: translateY(10px) scale(0.98);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .add-transaction-sheet {
-      animation: none;
-    }
-  }
-</style>

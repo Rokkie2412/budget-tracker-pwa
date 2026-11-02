@@ -69,14 +69,14 @@
   });
 </script>
 
-<div data-theme={$theme} class="min-h-dvh bg-base-100 text-base-content">
+<div data-theme={$theme} class="min-h-dvh bg-white text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
   {#if authCheckPending}
     <main
-      class="flex min-h-dvh items-center justify-center bg-zinc-100"
+      class="flex min-h-dvh items-center justify-center bg-zinc-100 dark:bg-zinc-800"
       role="status"
       aria-label="Checking authentication"
     >
-      <span class="loading loading-spinner loading-lg text-zinc-700"></span>
+      <span class="size-8 animate-spin rounded-full border-2 border-zinc-700 border-r-transparent dark:border-zinc-300" aria-hidden="true"></span>
     </main>
   {:else}
     {@render children()}
