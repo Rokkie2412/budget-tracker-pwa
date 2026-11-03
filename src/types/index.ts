@@ -11,12 +11,6 @@ export type ExpenseCategory = (typeof BUDGET_CATEGORIES_EXPENSE)[number];
 export type IncomeCategory = (typeof BUDGET_CATEGORIES_INCOME)[number];
 export type BudgetCategory = ExpenseCategory | IncomeCategory;
 
-export type IUserConnected = {
-  userId: string;
-  password: string;
-  allowChat: boolean;
-}
-
 export type CategoryBreakdownItem<TCategory extends string> = {
   category: TCategory;
   total: number;
@@ -41,7 +35,7 @@ export type ITransaction = {
 
 export type AuthPayload = {
   userId: string;
-  phoneNumber: string
+  email: string;
 }
 
 export type MonthSummary = {

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+
   import {
     Pagination,
     TransactionCard,
@@ -25,7 +27,7 @@
   });
   let transactionResponse = $state(data.transactions);
   let currentPage = $state(data.transactions.data?.pagination?.page ?? 1);
-  let isLoading = $state(false);
+  let isLoading = $state(true);
   let loadError = $state<string | null>(
     data.errorMessage ?? data.transactions.errorMessage ?? null,
   );
@@ -52,6 +54,10 @@
     setLoading: (value) => (isLoading = value),
     setLoadError: (value) => (loadError = value),
     setDeletingTransactionId: (value) => (deletingTransactionId = value),
+  });
+
+  onMount(() => {
+    void fetchTransactions(1);
   });
 
   $effect(() => {

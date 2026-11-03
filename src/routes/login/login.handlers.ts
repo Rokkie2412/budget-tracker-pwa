@@ -1,47 +1,32 @@
-import {
-  apiBaseUrl
-} from "../../lib/utils";
+import { createSupabaseClient } from '@/lib/services/supabase';
+
 import { t } from "../../stores";
 
 
 export const keyErrorMapper: Record<string, string> = {
-  PHONE_AND_PASSWORD_REQUIRED: t("phoneAndPasswordRequired"),
   INVALID_CREDENTIALS: t("invalidCredentials"),
-  SERVER_ERROR: t("serverError"),
-  REQUEST_BODY_MUST_BE_VALID_JSON: t("requestBodyMustBeValidJson"),
 };
 
-export const onSubmitLogin = async (phone: string, password: string) => {
-  if (import.meta.env.MODE === "capacitor" && !apiBaseUrl) {
-    throw new Error(t("apiNotConfigured"));
-  }
-
-  const res = await fetch(`${apiBaseUrl}/api/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      phone,
-      password,
-    }),
+export const onSubmitLogin = async (email: string, password: string) => {
+  const { data, error } = await createSupabaseClient().auth.signInWithPassword({
+    email: email.trim(),
+    password,
   });
-
-  const result = await res.json();
-  if (!res.ok) {
-    throw new Error(result.message ?? t("loginFailed"));
+  if (error) {
+    throw new Error(error.code === 'invalid_credentials' ? 'INVALID_CREDENTIALS' : error.message);
+  }
+  if (!data.session || !data.user) {
+    throw new Error(t("loginFailed"));
   }
 
-  return result;
-};
-
-export const normalizePhoneNumber = (phone: string, phoneCallingCode: string): string => {
-  const phoneDigits = phone.replace(/\D/g, '');
-  const isInternational = /^(?:\+|00)/.test(phone.trim());
-  const nationalNumber =
-    isInternational && phoneDigits.startsWith(phoneCallingCode)
-      ? phoneDigits.slice(phoneCallingCode.length)
-      : phoneDigits;
-
-  return phoneCallingCode + nationalNumber.replace(/^0+/, '');
+  return {
+    message: 'LOGIN_SUCCESS',
+    credential: {
+      accessToken: data.session.access_token,
+      refreshToken: data.session.refresh_token,
+      expiresAt: data.session.expires_at ?? Math.floor(Date.now() / 1000) + data.session.expires_in,
+      userId: data.user.id,
+      email: data.user.email ?? email.trim(),
+    },
+  };
 };

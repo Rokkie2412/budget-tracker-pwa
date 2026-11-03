@@ -1,9 +1,32 @@
-# Svelte library
+# Budget Tracker
+
+## Supabase setup
+
+The app uses Supabase Auth and the `public.transactions` table. Set these
+variables in `.env`:
+
+```dotenv
+PUBLIC_SUPABASE_URL_DEV=https://your-dev-project.supabase.co
+PUBLIC_SUPABASE_PUBLISHABLE_KEY_DEV=your-dev-publishable-key
+PUBLIC_SUPABASE_URL=https://your-prod-project.supabase.co
+PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-prod-publishable-key
+```
+
+`pnpm dev` uses the development project. Production and Capacitor builds use
+the production project. Publishable keys are intended for client use; never put
+a Supabase secret or service-role key in these variables.
+
+Run the SQL in `supabase/migrations/20261103000000_auth_and_rls.sql` in each
+project's SQL editor. It creates a `public.users` profile for every Auth user,
+backfills existing Auth users, and enables owner-only access to profiles and
+transactions. Enable email/password sign-in in Supabase Auth and import or
+create accounts there before signing in. Transaction ownership uses the Auth
+user UUID in `transactions."userId"`.
 
 ## Android APK preview (Capacitor)
 
-The Android build bundles the Svelte UI into the APK. SvelteKit's API and MongoDB
-remain on a server; they are not bundled into the app.
+The Android build bundles the Svelte UI into the APK. The SvelteKit API remains
+on a server; Supabase handles authentication and database access.
 
 1. Install Android Studio, including its Android SDK and JDK.
 2. Copy `.env.capacitor.example` to `.env.capacitor`. Set `VITE_API_BASE_URL` to

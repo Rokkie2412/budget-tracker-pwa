@@ -5,6 +5,7 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			user: import('@/types').AuthPayload | null;
+			supabase: ReturnType<typeof import('@/lib/services/supabase').createSupabaseClient> | null;
 		}
 		// interface PageData {}
 		// interface PageState {}

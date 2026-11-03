@@ -10,35 +10,27 @@
 	import { loadingMask, setLoadingMask, showToast, t } from "../../stores";
 	import {
 		keyErrorMapper,
-		normalizePhoneNumber,
 		onSubmitLogin,
 	} from "./login.handlers";
 	import type { LoginRes } from "./login.types";
 
 	const loginSchema = yup.object({
-		phone: yup
+		email: yup
 			.string()
 			.required(t("fieldRequired"))
-			.test("valid-phone", t("invalidPhoneNumber"), (value) => {
-				const digitCount = value?.replace(/\D/g, "").length ?? 0;
-				return digitCount >= 5 && digitCount <= 15;
-			}),
-		phoneCountry: yup.string().required(t("fieldRequired")),
-		phoneCallingCode: yup.string().required(t("fieldRequired")),
+			.email(),
 		password: yup.string().required(t("fieldRequired")),
 	});
 
 	const { form, errors } = createForm<yup.InferType<typeof loginSchema>>({
 		extend: validator({ schema: loginSchema }),
 		onSubmit: async (values) => {
-			const phone = normalizePhoneNumber(values.phone, values.phoneCallingCode);
-
 			try {
 				setLoadingMask(true);
-				const login: LoginRes = await onSubmitLogin(phone, values.password);
+				const login: LoginRes = await onSubmitLogin(values.email, values.password);
 				const message = login.message;
 
-				await setAuth(login.token, login.user.userId);
+				await setAuth(login.credential);
 				showToast(keyErrorMapper[message] ?? t("loginSuccess"), "success");
 				await goto("/dashboard");
 			} catch (error: unknown) {
@@ -158,14 +150,14 @@
 
 			<form use:form class="space-y-5" novalidate>
 				<InputForm
-					id="phone"
-					label={t("phoneNumber")}
-					name="phone"
-					placeholder={t("phonePlaceholder")}
-					showNumberDropdown
+					id="email"
+					label="Email"
+					name="email"
+					placeholder="name@example.com"
+					inputType="email"
 				/>
-				{#if $errors.phone?.[0]}
-					<p class="-mt-3 text-sm text-rose-700" role="alert">{$errors.phone[0]}</p>
+				{#if $errors.email?.[0]}
+					<p class="-mt-3 text-sm text-rose-700" role="alert">{$errors.email[0]}</p>
 				{/if}
 				<InputForm
 					id="password"
@@ -211,7 +203,10 @@
 
 				<p class="text-center text-sm text-zinc-600 dark:text-zinc-400">
 					{t("newToDompet")}
-					<span class="font-semibold text-zinc-900 dark:text-zinc-100">{t("createAccount")}</span>
+					<a
+						href="/register"
+						class="font-semibold text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100"
+					>{t("createAccount")}</a>
 				</p>
 			</form>
 

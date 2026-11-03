@@ -1,9 +1,8 @@
 import { defineEnvVars } from '@sveltejs/kit/env';
 
 export const variables = defineEnvVars({
-  MONGO_URI_PROD: {},
-  MONGO_URI_DEV: {},
-  ENCRYPTION_KEY: {},
-  STATIC_SALT: {},
-  JWT_KEY: {},
+  PUBLIC_SUPABASE_URL_DEV: { public: true, static: true },
+  PUBLIC_SUPABASE_PUBLISHABLE_KEY_DEV: { public: true, static: true },
+  PUBLIC_SUPABASE_URL: { public: true, static: true },
+  PUBLIC_SUPABASE_PUBLISHABLE_KEY: { public: true, static: true },
 });

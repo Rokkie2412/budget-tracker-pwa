@@ -55,7 +55,7 @@ export const createTransactionHandlers = (state: HandlerState) => {
       if (!authData) throw new Error(t("invalidCredentials"));
 
       const params = new URLSearchParams({
-        userId: authData.phoneNumber,
+        userId: authData.userId,
         page: String(targetPage),
       });
       if (selectedFilters.type !== "all") params.set("type", selectedFilters.type);
@@ -71,14 +71,17 @@ export const createTransactionHandlers = (state: HandlerState) => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${authData.jwtToken}`,
+          Authorization: `Bearer ${authData.accessToken}`,
         },
       });
-      const result = (await response.json()) as TransactionsResponse;
+      const result = (await response.json()) as TransactionsResponse & {
+        message?: string;
+        error?: string;
+      };
 
       if (!response.ok) {
         throw new Error(
-          result.errorMessage ?? `${t("transactionsError")} (${response.status})`,
+          result.error ?? result.message ?? `${t("transactionsError")} (${response.status})`,
         );
       }
       if (requestId !== requestSequence) return;
@@ -132,7 +135,7 @@ export const createTransactionHandlers = (state: HandlerState) => {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${authData.jwtToken}`,
+          Authorization: `Bearer ${authData.accessToken}`,
         },
         body: JSON.stringify({ transactionId: transaction._id }),
       });

@@ -86,7 +86,7 @@
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${authData.jwtToken}`,
+              Authorization: `Bearer ${authData.accessToken}`,
             },
             body: JSON.stringify({
               amount: Number(values.amount),
@@ -97,8 +97,19 @@
             }),
           });
 
-          if (!response.ok)
-            throw new Error(t("transactionCreateFailed", $language));
+          if (!response.ok) {
+            const result = (await response.json().catch(() => null)) as {
+              error?: unknown;
+              message?: unknown;
+            } | null;
+            const message =
+              typeof result?.error === "string"
+                ? result.error
+                : typeof result?.message === "string"
+                  ? result.message
+                  : t("transactionCreateFailed", $language);
+            throw new Error(message);
+          }
 
           showToast(t("transactionCreateSuccess", $language), "success");
           notifyTransactionsChanged();

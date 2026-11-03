@@ -17,7 +17,7 @@ export const fetchMonthlyTransactions = async (
   const startDate = new Date(year, month - 1, 1).toISOString();
   const endDate = new Date(year, month, 0, 23, 59, 59, 999).toISOString();
   const params = new URLSearchParams({
-    userId: authData.phoneNumber,
+    userId: authData.userId,
     page: String(page),
     limit: String(TRANSACTIONS_PER_PAGE),
     startDate,
@@ -25,7 +25,7 @@ export const fetchMonthlyTransactions = async (
   });
   const response = await fetch(`${apiBaseUrl}/api/transactions-list?${params}`, {
     headers: {
-      Authorization: `Bearer ${authData.jwtToken}`,
+      Authorization: `Bearer ${authData.accessToken}`,
     },
   });
   const result = (await response.json()) as TransactionsResponse & {
@@ -47,7 +47,7 @@ export const deleteMonthlyTransaction = async (transaction: Transaction): Promis
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${authData.jwtToken}`,
+      Authorization: `Bearer ${authData.accessToken}`,
     },
     body: JSON.stringify({ transactionId: transaction._id }),
   });
