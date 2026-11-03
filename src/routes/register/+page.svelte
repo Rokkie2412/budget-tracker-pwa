@@ -32,7 +32,20 @@
 					},
 				});
 
-				if (error) throw error;
+				if (error) {
+					const alreadyRegistered =
+						error.code === "user_already_exists" ||
+						error.code === "email_exists" ||
+						/already (registered|exists)/i.test(error.message);
+					throw new Error(
+						alreadyRegistered ? t("emailAlreadyRegistered") : error.message,
+					);
+				}
+
+				if (data.user?.identities?.length === 0) {
+					showToast(t("emailAlreadyRegistered"), "error");
+					return;
+				}
 
 				if (data.session && data.user) {
 					await setAuth({
