@@ -16,12 +16,22 @@ PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-prod-publishable-key
 the production project. Publishable keys are intended for client use; never put
 a Supabase secret or service-role key in these variables.
 
-Run the SQL in `supabase/migrations/20261103000000_auth_and_rls.sql` in each
-project's SQL editor. It creates a `public.users` profile for every Auth user,
-backfills existing Auth users, and enables owner-only access to profiles and
-transactions. Enable email/password sign-in in Supabase Auth and import or
-create accounts there before signing in. Transaction ownership uses the Auth
-user UUID in `transactions."userId"`.
+Configure `public.transactions` with row-level security so authenticated users
+can access only rows whose `"userId"` matches `auth.uid()`. The app uses
+Supabase Auth directly, and transaction ownership uses the Auth user UUID in
+`transactions."userId"`. Enable email/password sign-in in Supabase Auth and
+create accounts there before signing in.
+
+If the old signup trigger that wrote to `public.users` is still installed, run
+this once in the Supabase SQL editor:
+
+```sql
+drop trigger if exists on_auth_user_created on auth.users;
+drop function if exists public.handle_new_auth_user();
+```
+
+This repository does not contain database migration scripts; apply database
+changes directly in each Supabase project's SQL editor.
 
 ## Android APK preview (Capacitor)
 
