@@ -18,7 +18,7 @@
 
 <article class="w-full border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900">
   <div class="flex items-center justify-between gap-3 px-3 py-2.5">
-    <div class="flex min-w-0 items-center gap-1 sm:gap-4">
+    <div class="flex min-w-0 flex-1 items-center gap-1 sm:gap-4">
       <div class="min-w-0">
         <h2 class="truncate text-base font-semibold text-zinc-800 dark:text-zinc-200">
           {title}

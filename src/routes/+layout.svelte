@@ -8,7 +8,12 @@
 
   import { ToastContainer } from "@/lib/components";
   import { checkAuth } from "@/lib/services/auth";
-  import { loadLanguage, loadTheme, theme } from "@/stores";
+  import {
+    loadAutoCategorization,
+    loadLanguage,
+    loadTheme,
+    theme,
+  } from "@/stores";
 
   let { children } = $props();
   let navigationCheck = 0;
@@ -66,6 +71,7 @@
   onMount(() => {
     loadLanguage();
     loadTheme();
+    loadAutoCategorization();
   });
 </script>
 

@@ -60,7 +60,7 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 
 	let query = supabase
 		.from('transactions')
-		.select('id, amount, description, created_at, category', { count: 'exact' })
+		.select('transaction_id, amount, description, created_at, category', { count: 'exact' })
 		.eq('userId', userId);
 	if (range) {
 		query = query
@@ -88,7 +88,7 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 	}
 
 	const transactions = (data ?? []).map((transaction) => ({
-		_id: String(transaction.id),
+		_id: String(transaction.transaction_id),
 		amount: Number(transaction.amount),
 		description: transaction.description ?? '',
 		date: transaction.created_at,
@@ -127,7 +127,8 @@ export const DELETE: RequestHandler = async ({ locals, request }) => {
 		body === null ||
 		!('transactionId' in body) ||
 		typeof body.transactionId !== 'string' ||
-		!/^\d+$/.test(body.transactionId)
+		body.transactionId.trim().length === 0 ||
+		body.transactionId.length > 128
 	) {
 		return Response.json({ message: 'A valid transactionId is required.' }, { status: 400 });
 	}
@@ -135,9 +136,9 @@ export const DELETE: RequestHandler = async ({ locals, request }) => {
 	const { data, error } = await supabase
 		.from('transactions')
 		.delete()
-		.eq('id', body.transactionId)
+		.eq('transaction_id', body.transactionId)
 		.eq('userId', userId)
-		.select('id');
+		.select('transaction_id');
 	if (error) {
 		return Response.json({ message: 'Could not delete the transaction.', error: error.message }, { status: 500 });
 	}

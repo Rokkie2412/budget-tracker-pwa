@@ -6,10 +6,16 @@
   import {
     BUDGET_CATEGORIES_EXPENSE,
     BUDGET_CATEGORIES_INCOME,
+    EXPENSE_KEYWORD_MAP,
+    INCOME_KEYWORD_MAP,
   } from "@/constants";
   import { getCategoryTranslationKey } from "@/i18n";
   import { checkAuth } from "@/lib/services/auth";
   import { apiBaseUrl } from "@/lib/utils";
+  import {
+    autoCategorization,
+    setAutoCategorization,
+  } from "@/stores/auto-categorization";
   import { showToast } from "@/stores/toast";
   import { notifyTransactionsChanged } from "@/stores/transactions-changed";
   import { language, t } from "@/stores/translation";
@@ -51,6 +57,69 @@
     yup.InferType<typeof transactionSchema>,
     "amount"
   > & { amount: number | string };
+
+  type TransactionType = "IN" | "OUT";
+  type CategoryKeywordMatcher = {
+    type: TransactionType;
+    category: Category;
+    regex: RegExp;
+  };
+
+  const createKeywordRegex = (keyword: string) => {
+    const escapedKeyword = keyword
+      .trim()
+      .split(/\s+/)
+      .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("\\s+");
+
+    return new RegExp(
+      `(^|[^\\p{L}\\p{N}_])(${escapedKeyword})(?=$|[^\\p{L}\\p{N}_])`,
+      "iu",
+    );
+  };
+
+  const categoryKeywordMatchers: CategoryKeywordMatcher[] = [
+    ...Object.entries(EXPENSE_KEYWORD_MAP).flatMap(([category, keywords]) =>
+      keywords.map((keyword) => ({
+        type: "OUT" as const,
+        category: category as Category,
+        regex: createKeywordRegex(keyword),
+      })),
+    ),
+    ...Object.entries(INCOME_KEYWORD_MAP).flatMap(([category, keywords]) =>
+      keywords.map((keyword) => ({
+        type: "IN" as const,
+        category: category as Category,
+        regex: createKeywordRegex(keyword),
+      })),
+    ),
+  ];
+
+  const detectCategory = (description: string) => {
+    let bestMatch:
+      | { type: TransactionType; category: Category; index: number; length: number }
+      | undefined;
+
+    for (const matcher of categoryKeywordMatchers) {
+      const match = matcher.regex.exec(description);
+      if (!match) continue;
+
+      const boundaryLength = match[1].length;
+      const index = match.index + boundaryLength;
+      const length = match[0].length - boundaryLength;
+      if (
+        !bestMatch ||
+        length > bestMatch.length ||
+        (length === bestMatch.length && index < bestMatch.index)
+      ) {
+        bestMatch = { type: matcher.type, category: matcher.category, index, length };
+      }
+    }
+
+    return bestMatch
+      ? { type: bestMatch.type, category: bestMatch.category }
+      : undefined;
+  };
 
   const initialTransactionValues = (): TransactionFormValues => ({
     type: "OUT",
@@ -147,6 +216,23 @@
     resetForm();
   };
 
+  $effect(() => {
+    if (!$autoCategorization) return;
+
+    const description = String($data.description ?? "").trim();
+    if (!description) return;
+
+    const timeout = setTimeout(() => {
+      const match = detectCategory(description);
+      if (!match) return;
+
+      setFields("type", match.type);
+      setFields("category", match.category);
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  });
+
   const changeType = (type: "IN" | "OUT") => {
     setFields("type", type);
     setFields("category",
@@ -241,32 +327,22 @@
         class="grid grid-cols-2 overflow-hidden rounded-lg"
         aria-label={t("transactionType", $language)}
       >
-        <label
+        <button
+          type="button"
+          aria-pressed={$data.type === "OUT"}
+          onclick={() => changeType("OUT")}
           class={`flex min-h-11 items-center justify-center border px-3 text-sm font-semibold transition-colors ${$data.type === "OUT" ? "border-rose-700 bg-rose-700 text-white" : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"}`}
         >
-          <input
-            type="radio"
-            name="type"
-            value="OUT"
-            class="sr-only"
-            checked={$data.type === "OUT"}
-            onchange={() => changeType("OUT")}
-          />
           {t("transactionOut", $language)}
-        </label>
-        <label
+        </button>
+        <button
+          type="button"
+          aria-pressed={$data.type === "IN"}
+          onclick={() => changeType("IN")}
           class={`flex min-h-11 items-center justify-center border px-3 text-sm font-semibold transition-colors ${$data.type === "IN" ? "border-emerald-700 bg-emerald-700 text-white" : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"}`}
         >
-          <input
-            type="radio"
-            name="type"
-            value="IN"
-            class="sr-only"
-            checked={$data.type === "IN"}
-            onchange={() => changeType("IN")}
-          />
           {t("transactionIn", $language)}
-        </label>
+        </button>
       </fieldset>
 
       <label class="flex flex-col gap-1.5">
@@ -300,6 +376,25 @@
       {#if $errors.description?.[0]}
         <p class="-mt-3 text-sm text-rose-700 dark:text-rose-300" role="alert">{$errors.description[0]}</p>
       {/if}
+
+      <div class="flex items-center justify-between gap-3">
+        <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+          {t("autoCategorization", $language)}
+        </span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={$autoCategorization}
+          aria-label={t("autoCategorization", $language)}
+          class={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${$autoCategorization ? "bg-emerald-700" : "bg-zinc-300 dark:bg-zinc-700"}`}
+          onclick={() => setAutoCategorization(!$autoCategorization)}
+        >
+          <span
+            aria-hidden="true"
+            class={`size-4 rounded-full bg-white transition-transform ${$autoCategorization ? "translate-x-6" : "translate-x-1"}`}
+          ></span>
+        </button>
+      </div>
 
       <label class="flex flex-col gap-1.5">
         <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-200"
