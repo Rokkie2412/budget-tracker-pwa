@@ -1,16 +1,119 @@
 <script lang="ts">
+  import { parsePhoneNumberFromString } from "libphonenumber-js";
+  import { onMount } from "svelte";
+
   import { goto } from "$app/navigation";
 
   import { InitialProfile } from "@/lib/components";
   import { removeAuth } from "@/lib/services/auth";
+  import {
+    fetchProfileSettings,
+    requestPhoneNumberChange,
+    saveProfileSettings,
+    verifyPhoneNumberChange,
+  } from "@/lib/services/profile";
   import { setTheme, theme } from "@/stores/theme";
+  import { showToast } from "@/stores/toast";
   import { language, setLanguage, t } from "@/stores/translation";
 
-  const mockData = {
-    userId: "+6285156141278",
-    allowChat: true,
-    userName: "Ervan Jovian",
+  let userName = $state("");
+  let phoneNumber = $state("");
+  let verifiedPhoneNumber = $state("");
+  let pendingPhoneNumber = $state("");
+  let verificationCode = $state("");
+  let allowChat = $state(false);
+  let isLoading = $state(true);
+  let isSaving = $state(false);
+  const parsedPhoneNumber = $derived(
+    parsePhoneNumberFromString(phoneNumber.trim(), "ID"),
+  );
+  const validPhoneNumber = $derived(parsedPhoneNumber?.isValid() ?? false);
+  const normalizedPhoneNumber = $derived(
+    validPhoneNumber && parsedPhoneNumber ? parsedPhoneNumber.number : "",
+  );
+  const canUseWhatsApp = $derived(
+    normalizedPhoneNumber.length > 0 &&
+      normalizedPhoneNumber === verifiedPhoneNumber,
+  );
+
+  const loadProfileSettings = async () => {
+    try {
+      const settings = await fetchProfileSettings();
+      userName = settings.name;
+      phoneNumber = settings.phoneNumber;
+      verifiedPhoneNumber = settings.verifiedPhoneNumber;
+      pendingPhoneNumber = settings.pendingPhoneNumber;
+      allowChat = settings.allowChat;
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : t("profileLoadFailed", $language),
+        "error",
+      );
+    } finally {
+      isLoading = false;
+    }
   };
+
+  const saveSettings = async (event: SubmitEvent) => {
+    event.preventDefault();
+    if (isSaving) return;
+
+    if (phoneNumber.trim() && !validPhoneNumber) {
+      showToast(t("invalidPhoneNumber", $language), "error");
+      return;
+    }
+
+    isSaving = true;
+
+    try {
+      if (
+        normalizedPhoneNumber &&
+        normalizedPhoneNumber !== verifiedPhoneNumber
+      ) {
+        if (pendingPhoneNumber !== normalizedPhoneNumber) {
+          await requestPhoneNumberChange(normalizedPhoneNumber);
+          pendingPhoneNumber = normalizedPhoneNumber;
+          verificationCode = "";
+          showToast(t("phoneVerificationSent", $language), "success");
+          return;
+        }
+
+        const token = verificationCode.trim();
+        if (!/^\d{6}$/.test(token)) {
+          showToast(t("invalidPhoneVerificationCode", $language), "error");
+          return;
+        }
+
+        await verifyPhoneNumberChange(normalizedPhoneNumber, token);
+        verifiedPhoneNumber = normalizedPhoneNumber;
+        phoneNumber = normalizedPhoneNumber;
+        pendingPhoneNumber = "";
+        verificationCode = "";
+        allowChat = false;
+        showToast(t("phoneNumberVerified", $language), "success");
+        return;
+      }
+
+      await saveProfileSettings(allowChat && canUseWhatsApp);
+      phoneNumber = verifiedPhoneNumber || normalizedPhoneNumber;
+      showToast(t("profileSettingsSaved", $language), "success");
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : t("profileSettingsSaveFailed", $language),
+        "error",
+      );
+    } finally {
+      isSaving = false;
+    }
+  };
+
+  $effect(() => {
+    if (!canUseWhatsApp) allowChat = false;
+  });
+
+  onMount(() => {
+    void loadProfileSettings();
+  });
 
   const onClickLogOut = async (): Promise<void> => {
     await removeAuth();
@@ -36,27 +139,57 @@
     <div
       class="-mt-8 flex flex-col px-5 pb-6"
     >
-      <div
-        class="rounded-xl border border-zinc-200 bg-white p-4 shadow-md shadow-zinc-900/5 dark:border-zinc-700 dark:bg-zinc-900"
-      >
-        <InitialProfile name={mockData.userName} />
+      <form onsubmit={saveSettings}>
         <div
-          class="mt-4 flex items-center justify-between gap-3 border-t border-zinc-200 pt-3 dark:border-zinc-700"
+          class="rounded-xl border border-zinc-200 bg-white p-4 shadow-md shadow-zinc-900/5 dark:border-zinc-700 dark:bg-zinc-900"
         >
-          <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            {t("numberTeL", $language)}
-          </span>
-          <span class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            {mockData.userId}
-          </span>
+          <InitialProfile name={userName || t("profileTitle", $language)} />
+          <label class="mt-4 flex flex-col gap-2 border-t border-zinc-200 pt-3 dark:border-zinc-700">
+            <span class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              {t("numberTeL", $language)}
+            </span>
+            <input
+              type="tel"
+              name="phoneNumber"
+              autocomplete="tel"
+              inputmode="tel"
+              placeholder="+62 812 3456 7890"
+              bind:value={phoneNumber}
+              disabled={isLoading || isSaving}
+              class="h-12 w-full rounded-lg border border-zinc-300 bg-white px-3 text-zinc-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+            />
+            <span class="text-xs text-zinc-500 dark:text-zinc-400">
+              {t("phoneNumberFormatHint", $language)}
+            </span>
+          </label>
+          {#if pendingPhoneNumber}
+            <label class="mt-4 flex flex-col gap-2">
+              <span class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                {t("phoneVerificationCode", $language)}
+              </span>
+              <input
+                type="text"
+                name="phoneVerificationCode"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                maxlength="6"
+                placeholder="123456"
+                bind:value={verificationCode}
+                disabled={isSaving}
+                class="h-12 w-full rounded-lg border border-zinc-300 bg-white px-3 text-zinc-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              />
+              <span class="text-xs text-zinc-500 dark:text-zinc-400">
+                {t("phoneVerificationSent", $language)}
+              </span>
+            </label>
+          {/if}
         </div>
-      </div>
 
-      <section class="mt-7">
-        <h2 class="mb-2 px-1 text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400">
-          {t("profilePreferences", $language)}
-        </h2>
-        <div class="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-700 dark:border-zinc-700">
+        <section class="mt-7">
+          <h2 class="mb-2 px-1 text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400">
+            {t("profilePreferences", $language)}
+          </h2>
+          <div class="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-700 dark:border-zinc-700">
           <fieldset class="flex flex-col gap-3 py-4">
             <legend class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               {t("languageLabel", $language)}
@@ -130,17 +263,43 @@
               <p class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                 {t("allowChatLabel", $language)}
               </p>
-              <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">WhatsApp</p>
+              <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                {#if canUseWhatsApp}
+                  WhatsApp
+                {:else if pendingPhoneNumber === normalizedPhoneNumber && pendingPhoneNumber}
+                  {t("phoneVerificationPending", $language)}
+                {:else}
+                  {t("whatsappPhoneRequired", $language)}
+                {/if}
+              </p>
             </div>
             <input
               type="checkbox"
-              checked={mockData.allowChat}
+              bind:checked={allowChat}
+              disabled={!canUseWhatsApp || isLoading || isSaving}
               class="size-5 accent-emerald-700"
               aria-label={t("allowChatLabel", $language)}
             />
           </label>
-        </div>
-      </section>
+          </div>
+        </section>
+
+        <button
+          type="submit"
+          disabled={isLoading || isSaving}
+          class="mt-5 flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {#if isSaving}
+            {t("loading", $language)}
+          {:else if pendingPhoneNumber === normalizedPhoneNumber && pendingPhoneNumber}
+            {t("verifyPhoneNumber", $language)}
+          {:else if normalizedPhoneNumber && normalizedPhoneNumber !== verifiedPhoneNumber}
+            {t("sendPhoneVerification", $language)}
+          {:else}
+            {t("saveProfileSettings", $language)}
+          {/if}
+        </button>
+      </form>
     </div>
 
     <button

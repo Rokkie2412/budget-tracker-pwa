@@ -10,7 +10,14 @@ PUBLIC_SUPABASE_URL_DEV=https://your-dev-project.supabase.co
 PUBLIC_SUPABASE_PUBLISHABLE_KEY_DEV=your-dev-publishable-key
 PUBLIC_SUPABASE_URL=https://your-prod-project.supabase.co
 PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-prod-publishable-key
+ENCRYPTION_KEY=your-server-only-key-of-at-least-32-bytes
 ```
+
+Set `ENCRYPTION_KEY` to a server-only secret with at least 32 bytes. Set the same
+variable in your deployment environment. Never use a `PUBLIC_`
+prefix, include this key in a client/Capacitor build, or commit it to source
+control. Back it up securely: losing or changing the key makes encrypted
+transaction descriptions unreadable.
 
 `pnpm dev` uses the development project. Production and Capacitor builds use
 the production project. Publishable keys are intended for client use; never put

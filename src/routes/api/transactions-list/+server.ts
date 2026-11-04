@@ -1,6 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit';
 
 import { BUDGET_CATEGORIES_EXPENSE, BUDGET_CATEGORIES_INCOME } from '@/constants';
+import { decryptDescription, encryptDescription } from '@/lib/server/description-crypto';
 import type { Category } from '@/types';
 
 const ALL_CATEGORIES: readonly string[] = [
@@ -87,14 +88,29 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 		return Response.json({ message: 'Could not retrieve transactions.', error: error.message }, { status: 500 });
 	}
 
-	const transactions = (data ?? []).map((transaction) => ({
-		_id: String(transaction.transaction_id),
-		amount: Number(transaction.amount),
-		description: transaction.description ?? '',
-		date: transaction.created_at,
-		type: getTransactionType(transaction.category),
-		category: transaction.category,
-	}));
+	let transactions: {
+		_id: string;
+		amount: number;
+		description: string;
+		date: string;
+		type: 'IN' | 'OUT' | null;
+		category: string;
+	}[];
+	try {
+		transactions = (data ?? []).map((transaction) => ({
+			_id: String(transaction.transaction_id),
+			amount: Number(transaction.amount),
+			description: decryptDescription(transaction.description ?? ''),
+			date: transaction.created_at,
+			type: getTransactionType(transaction.category),
+			category: transaction.category,
+		}));
+	} catch {
+		return Response.json(
+			{ message: 'Could not decrypt transaction descriptions. Check the server encryption key.' },
+			{ status: 500 },
+		);
+	}
 	const totalTransactions = count ?? 0;
 
 	return Response.json({
@@ -183,10 +199,20 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 		return Response.json({ message: 'Invalid transaction details.' }, { status: 400 });
 	}
 
+	let encryptedDescription: string;
+	try {
+		encryptedDescription = encryptDescription(normalizedDescription);
+	} catch {
+		return Response.json(
+			{ message: 'Transaction encryption is unavailable. Configure ENCRYPTION_KEY on the server with at least 32 bytes.' },
+			{ status: 503 },
+		);
+	}
+
 	const { error } = await supabase.from('transactions').insert({
 		userId,
 		amount,
-		description: normalizedDescription,
+		description: encryptedDescription,
 		category: category as Category,
 		created_at: parsedDate.toISOString(),
 	});
