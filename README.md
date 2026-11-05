@@ -29,6 +29,11 @@ Supabase Auth directly, and transaction ownership uses the Auth user UUID in
 `transactions."userId"`. Enable email/password sign-in in Supabase Auth and
 create accounts there before signing in.
 
+The profile page stores an optional phone contact in Auth user metadata without
+SMS verification. It does not update Supabase Auth's verified phone field or
+send an OTP. Enter phone numbers in international format (for example,
+`+6281234567890`).
+
 If the old signup trigger that wrote to `public.users` is still installed, run
 this once in the Supabase SQL editor:
 

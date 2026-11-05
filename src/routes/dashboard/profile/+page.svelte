@@ -8,9 +8,7 @@
   import { removeAuth } from "@/lib/services/auth";
   import {
     fetchProfileSettings,
-    requestPhoneNumberChange,
     saveProfileSettings,
-    verifyPhoneNumberChange,
   } from "@/lib/services/profile";
   import { setTheme, theme } from "@/stores/theme";
   import { showToast } from "@/stores/toast";
@@ -18,9 +16,6 @@
 
   let userName = $state("");
   let phoneNumber = $state("");
-  let verifiedPhoneNumber = $state("");
-  let pendingPhoneNumber = $state("");
-  let verificationCode = $state("");
   let allowChat = $state(false);
   let isLoading = $state(true);
   let isSaving = $state(false);
@@ -31,18 +26,13 @@
   const normalizedPhoneNumber = $derived(
     validPhoneNumber && parsedPhoneNumber ? parsedPhoneNumber.number : "",
   );
-  const canUseWhatsApp = $derived(
-    normalizedPhoneNumber.length > 0 &&
-      normalizedPhoneNumber === verifiedPhoneNumber,
-  );
+  const canUseWhatsApp = $derived(normalizedPhoneNumber.length > 0);
 
   const loadProfileSettings = async () => {
     try {
       const settings = await fetchProfileSettings();
       userName = settings.name;
       phoneNumber = settings.phoneNumber;
-      verifiedPhoneNumber = settings.verifiedPhoneNumber;
-      pendingPhoneNumber = settings.pendingPhoneNumber;
       allowChat = settings.allowChat;
     } catch (error) {
       showToast(
@@ -66,36 +56,8 @@
     isSaving = true;
 
     try {
-      if (
-        normalizedPhoneNumber &&
-        normalizedPhoneNumber !== verifiedPhoneNumber
-      ) {
-        if (pendingPhoneNumber !== normalizedPhoneNumber) {
-          await requestPhoneNumberChange(normalizedPhoneNumber);
-          pendingPhoneNumber = normalizedPhoneNumber;
-          verificationCode = "";
-          showToast(t("phoneVerificationSent", $language), "success");
-          return;
-        }
-
-        const token = verificationCode.trim();
-        if (!/^\d{6}$/.test(token)) {
-          showToast(t("invalidPhoneVerificationCode", $language), "error");
-          return;
-        }
-
-        await verifyPhoneNumberChange(normalizedPhoneNumber, token);
-        verifiedPhoneNumber = normalizedPhoneNumber;
-        phoneNumber = normalizedPhoneNumber;
-        pendingPhoneNumber = "";
-        verificationCode = "";
-        allowChat = false;
-        showToast(t("phoneNumberVerified", $language), "success");
-        return;
-      }
-
-      await saveProfileSettings(allowChat && canUseWhatsApp);
-      phoneNumber = verifiedPhoneNumber || normalizedPhoneNumber;
+      await saveProfileSettings(normalizedPhoneNumber, allowChat && canUseWhatsApp);
+      phoneNumber = normalizedPhoneNumber;
       showToast(t("profileSettingsSaved", $language), "success");
     } catch (error) {
       showToast(
@@ -162,27 +124,6 @@
               {t("phoneNumberFormatHint", $language)}
             </span>
           </label>
-          {#if pendingPhoneNumber}
-            <label class="mt-4 flex flex-col gap-2">
-              <span class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                {t("phoneVerificationCode", $language)}
-              </span>
-              <input
-                type="text"
-                name="phoneVerificationCode"
-                inputmode="numeric"
-                autocomplete="one-time-code"
-                maxlength="6"
-                placeholder="123456"
-                bind:value={verificationCode}
-                disabled={isSaving}
-                class="h-12 w-full rounded-lg border border-zinc-300 bg-white px-3 text-zinc-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
-              />
-              <span class="text-xs text-zinc-500 dark:text-zinc-400">
-                {t("phoneVerificationSent", $language)}
-              </span>
-            </label>
-          {/if}
         </div>
 
         <section class="mt-7">
@@ -266,8 +207,6 @@
               <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
                 {#if canUseWhatsApp}
                   WhatsApp
-                {:else if pendingPhoneNumber === normalizedPhoneNumber && pendingPhoneNumber}
-                  {t("phoneVerificationPending", $language)}
                 {:else}
                   {t("whatsappPhoneRequired", $language)}
                 {/if}
@@ -291,10 +230,6 @@
         >
           {#if isSaving}
             {t("loading", $language)}
-          {:else if pendingPhoneNumber === normalizedPhoneNumber && pendingPhoneNumber}
-            {t("verifyPhoneNumber", $language)}
-          {:else if normalizedPhoneNumber && normalizedPhoneNumber !== verifiedPhoneNumber}
-            {t("sendPhoneVerification", $language)}
           {:else}
             {t("saveProfileSettings", $language)}
           {/if}

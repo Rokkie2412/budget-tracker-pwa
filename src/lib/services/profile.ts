@@ -4,8 +4,6 @@ import { createSupabaseClient } from "@/lib/services/supabase";
 export type ProfileSettings = {
   name: string;
   phoneNumber: string;
-  verifiedPhoneNumber: string;
-  pendingPhoneNumber: string;
   allowChat: boolean;
 };
 
@@ -66,53 +64,21 @@ export const fetchProfileSettings = async (): Promise<ProfileSettings> => {
 
   return {
     name: metadataName || data.user.email || "",
-    phoneNumber: data.user.new_phone || phoneNumber,
-    verifiedPhoneNumber: data.user.phone ?? "",
-    pendingPhoneNumber: data.user.new_phone ?? "",
-    allowChat: Boolean(data.user.phone) && metadata.allowChat === true,
+    phoneNumber,
+    allowChat: Boolean(phoneNumber) && metadata.allowChat === true,
   };
 };
 
-export const requestPhoneNumberChange = async (phoneNumber: string): Promise<void> => {
-  const { supabase, user, fallbackEmail } = await getAuthenticatedClient();
-  if (user.phone === phoneNumber) return;
-
-  const { error } = await supabase.auth.updateUser({ phone: phoneNumber });
-  if (error) throw error;
-  await persistCurrentSession(supabase, fallbackEmail);
-};
-
-export const verifyPhoneNumberChange = async (
+export const saveProfileSettings = async (
   phoneNumber: string,
-  token: string,
+  allowChat: boolean,
 ): Promise<void> => {
-  const { supabase, fallbackEmail } = await getAuthenticatedClient();
-  const { data, error } = await supabase.auth.verifyOtp({
-    phone: phoneNumber,
-    token,
-    type: "phone_change",
-  });
-  if (error) throw error;
-  if (!data.user) throw new Error("Could not verify the phone number.");
-
-  const { error: metadataError } = await supabase.auth.updateUser({
-    data: {
-      ...data.user.user_metadata,
-      phoneNumber,
-      allowChat: false,
-    },
-  });
-  if (metadataError) throw metadataError;
-  await persistCurrentSession(supabase, fallbackEmail);
-};
-
-export const saveProfileSettings = async (allowChat: boolean): Promise<void> => {
   const { supabase, user, fallbackEmail } = await getAuthenticatedClient();
   const { error } = await supabase.auth.updateUser({
     data: {
       ...user.user_metadata,
-      phoneNumber: user.phone ?? "",
-      allowChat: Boolean(user.phone) && allowChat,
+      phoneNumber,
+      allowChat: Boolean(phoneNumber) && allowChat,
     },
   });
   if (error) throw error;
