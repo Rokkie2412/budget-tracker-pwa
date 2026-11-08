@@ -1,5 +1,6 @@
 import { checkAuth, setAuth } from "@/lib/services/auth";
 import { createSupabaseClient } from "@/lib/services/supabase";
+import { apiBaseUrl } from "@/lib/utils";
 
 export type ProfileSettings = {
   name: string;
@@ -73,14 +74,26 @@ export const saveProfileSettings = async (
   phoneNumber: string,
   allowChat: boolean,
 ): Promise<void> => {
-  const { supabase, user, fallbackEmail } = await getAuthenticatedClient();
-  const { error } = await supabase.auth.updateUser({
-    data: {
-      ...user.user_metadata,
-      phoneNumber,
-      allowChat: Boolean(phoneNumber) && allowChat,
+  const { supabase, fallbackEmail } = await getAuthenticatedClient();
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session) {
+    throw error ?? new Error("Could not restore the signed-in session.");
+  }
+
+  const response = await fetch(`${apiBaseUrl}/api/profile-settings`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${data.session.access_token}`,
     },
+    body: JSON.stringify({ phoneNumber, allowChat }),
   });
-  if (error) throw error;
+  const result = (await response.json().catch(() => ({}))) as {
+    message?: string;
+  };
+  if (!response.ok) {
+    throw new Error(result.message ?? "Could not save profile settings.");
+  }
+
   await persistCurrentSession(supabase, fallbackEmail);
 };

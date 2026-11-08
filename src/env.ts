@@ -9,4 +9,12 @@ export const variables = defineEnvVars({
     description: "Server-only key with at least 32 bytes used to encrypt transaction descriptions.",
     schema: (value) => value,
   },
+  SUPABASE_SERVICE_ROLE_KEY_DEV: {
+    description: "Server-only service role key for the development Supabase project.",
+    schema: (value) => value,
+  },
+  SUPABASE_SERVICE_ROLE_KEY: {
+    description: "Server-only service role key for the production Supabase project.",
+    schema: (value) => value,
+  },
 });
