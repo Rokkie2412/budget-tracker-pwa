@@ -67,7 +67,7 @@ export const PATCH: RequestHandler = async ({ locals, request }) => {
       phoneNumber,
       allowChat: Boolean(phoneNumber) && allowChat,
     },
-    ...(phoneNumber && phoneNumber !== (currentUser.user.phone ?? "")
+    ...(phoneNumber !== (currentUser.user.phone ?? "")
       ? { phone: phoneNumber }
       : {}),
   };

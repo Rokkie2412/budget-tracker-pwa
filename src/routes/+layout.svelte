@@ -1,20 +1,23 @@
 <script>
   import "../app.css";
 
+  import { App } from "@capacitor/app";
+  import { Capacitor } from "@capacitor/core";
   import { onMount } from "svelte";
 
   import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
   import { page } from "$app/state";
 
   import { ToastContainer } from "@/lib/components";
-  import { checkAuth } from "@/lib/services/auth";
+  import { checkAuth, setAuth } from "@/lib/services/auth";
+  import { createSupabaseClient } from "@/lib/services/supabase";
   import {
     language,
     loadAutoCategorization,
     loadLanguage,
     loadTheme,
-    theme,
     t,
+    theme,
   } from "@/stores";
 
   let { children } = $props();
@@ -25,8 +28,70 @@
   let pullTracking = false;
   let pullStartX = 0;
   let pullStartY = 0;
+  let handledDeepLink = "";
   /** @type {HTMLElement | null} */
   let pullScroller = null;
+
+  /** @param {string} url */
+  const handleAppUrl = async (url) => {
+    if (url === handledDeepLink) return;
+
+    try {
+      const callbackUrl = new URL(url);
+      const isNativeCallback =
+        callbackUrl.protocol === "com.dompettracker.app:" &&
+        callbackUrl.hostname === "login";
+      const isWebCallback =
+        !Capacitor.isNativePlatform() &&
+        callbackUrl.origin === window.location.origin &&
+        callbackUrl.pathname === "/login";
+      if (!isNativeCallback && !isWebCallback) {
+        return;
+      }
+
+      handledDeepLink = url;
+      const auth = createSupabaseClient().auth;
+      const code = callbackUrl.searchParams.get("code");
+      /** @type {import("@supabase/supabase-js").Session | null} */
+      let session = null;
+
+      if (code) {
+        const { data, error } = await auth.exchangeCodeForSession(code);
+        if (error) throw error;
+        session = data.session;
+      } else {
+        const callbackParams = new URLSearchParams(callbackUrl.hash.slice(1));
+        const accessToken = callbackParams.get("access_token");
+        const refreshToken = callbackParams.get("refresh_token");
+        if (accessToken && refreshToken) {
+          const { data, error } = await auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (error) throw error;
+          session = data.session;
+        }
+      }
+
+      if (!session?.user) {
+        await goto("/login", { replaceState: true });
+        return;
+      }
+
+      await setAuth({
+        accessToken: session.access_token,
+        refreshToken: session.refresh_token,
+        expiresAt:
+          session.expires_at ?? Math.floor(Date.now() / 1000) + session.expires_in,
+        userId: session.user.id,
+        email: session.user.email ?? "",
+      });
+      await goto("/dashboard", { replaceState: true });
+    } catch (error) {
+      console.error("Could not handle the authentication deep link", error);
+      await goto("/login", { replaceState: true });
+    }
+  };
 
   const isPullRefreshDisabled = () =>
     authCheckPending ||
@@ -167,12 +232,43 @@
     loadTheme();
     loadAutoCategorization();
 
+    let active = true;
+    /** @type {(() => void) | undefined} */
+    let removeAppUrlListener;
+    if (Capacitor.isNativePlatform()) {
+      void App.addListener("appUrlOpen", ({ url }) => {
+        void handleAppUrl(url);
+      })
+        .then((listener) => {
+          if (!active) {
+            void listener.remove();
+            return;
+          }
+          removeAppUrlListener = () => void listener.remove();
+        })
+        .catch((error) => {
+          console.error("Could not register the authentication deep-link listener", error);
+        });
+
+      void App.getLaunchUrl()
+        .then((launch) => {
+          if (launch?.url) return handleAppUrl(launch.url);
+        })
+        .catch((error) => {
+          console.error("Could not read the app launch URL", error);
+        });
+    } else if (page.url.pathname === "/login") {
+      void handleAppUrl(window.location.href);
+    }
+
     document.addEventListener("touchstart", handleTouchStart, { passive: true });
     document.addEventListener("touchmove", handleTouchMove, { passive: false });
     document.addEventListener("touchend", handleTouchEnd, { passive: true });
     document.addEventListener("touchcancel", resetPullGesture, { passive: true });
 
     return () => {
+      active = false;
+      removeAppUrlListener?.();
       document.removeEventListener("touchstart", handleTouchStart);
       document.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("touchend", handleTouchEnd);

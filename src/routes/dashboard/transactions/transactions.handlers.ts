@@ -168,8 +168,18 @@ export const createTransactionHandlers = (state: HandlerState) => {
       const totalPages = Math.ceil(totalTransactions / responseData.pagination.limit);
       const currentPage = state.getCurrentPage();
       const targetPage = totalPages > 0 ? Math.min(currentPage, totalPages) : 1;
+      const expectedPageLength = Math.max(
+        0,
+        Math.min(
+          responseData.pagination.limit,
+          totalTransactions - (targetPage - 1) * responseData.pagination.limit,
+        ),
+      );
 
-      if (targetPage !== currentPage && totalPages > 0) {
+      if (
+        targetPage !== currentPage ||
+        remainingTransactions.length !== expectedPageLength
+      ) {
         await fetchTransactions(targetPage);
       } else {
         state.setResponse({

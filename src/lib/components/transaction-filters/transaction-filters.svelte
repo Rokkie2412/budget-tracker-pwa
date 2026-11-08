@@ -14,7 +14,12 @@
     TransactionTypeFilter,
   } from "./transaction-filters.types";
 
-  let { filters, onChange }: Props = $props();
+  let {
+    filters,
+    hasExternalFilter = false,
+    onClear,
+    onChange,
+  }: Props = $props();
   let dateDialog = $state<HTMLDialogElement>();
   let draftStartDate = $state("");
   let draftEndDate = $state("");
@@ -27,7 +32,8 @@
         : [...BUDGET_CATEGORIES_INCOME, ...BUDGET_CATEGORIES_EXPENSE],
   );
   const hasActiveFilters = $derived(
-    filters.type !== "all" ||
+    hasExternalFilter ||
+      filters.type !== "all" ||
       filters.category !== "all" ||
       filters.period !== "all",
   );
@@ -60,6 +66,20 @@
 
   const getDateRange = (period: Exclude<TransactionDatePeriod, "all" | "custom">) => {
     const today = new Date();
+    if (period === "lastMonth") {
+      const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const end = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        0,
+        23,
+        59,
+        59,
+        999,
+      );
+      return { startDate: start.toISOString(), endDate: end.toISOString() };
+    }
+
     const start = new Date(
       today.getFullYear(),
       today.getMonth(),
@@ -68,14 +88,6 @@
 
     if (period === "last7Days") {
       start.setDate(start.getDate() - 6);
-    } else if (period === "lastMonth") {
-      const previousMonthLastDay = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        0,
-      ).getDate();
-      start.setFullYear(today.getFullYear(), today.getMonth() - 1, 1);
-      start.setDate(Math.min(today.getDate(), previousMonthLastDay));
     }
 
     const end = new Date(
@@ -104,6 +116,7 @@
   }
 
   function clearFilters() {
+    onClear?.();
     onChange({
       ...filters,
       type: "all",

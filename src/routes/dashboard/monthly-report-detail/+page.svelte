@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { slide } from "svelte/transition";
   import { get } from "svelte/store";
+  import { slide } from "svelte/transition";
 
   import { goto } from "$app/navigation";
 
