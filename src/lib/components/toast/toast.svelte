@@ -9,7 +9,7 @@
 	} as const;
 </script>
 
-<div class="fixed top-4 left-1/2 z-[100] flex w-[min(calc(100%-2rem),28rem)] -translate-x-1/2 flex-col gap-2">
+<div class="fixed top-[calc(env(safe-area-inset-top)+1rem)] left-1/2 z-[100] flex w-[min(calc(100%-2rem),28rem)] -translate-x-1/2 flex-col gap-2">
 	{#each $toasts as item (item.id)}
 		<div
                         class={`motion-toast flex items-center justify-between gap-4 rounded-lg border px-4 py-3 text-sm shadow-lg ${toastClasses[item.type]}`}

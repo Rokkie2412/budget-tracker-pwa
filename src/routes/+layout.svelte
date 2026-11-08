@@ -109,7 +109,7 @@
         color: mode === "dark" ? "#18181b" : "#ffffff",
       });
       await StatusBar.setStyle({
-        style: mode === "dark" ? Style.Light : Style.Dark,
+        style: mode === "dark" ? Style.Dark : Style.Light,
       });
     } catch (error) {
       console.error("Could not sync the status bar with the app theme", error);
