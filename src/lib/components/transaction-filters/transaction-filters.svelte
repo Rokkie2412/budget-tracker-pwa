@@ -149,7 +149,7 @@
       {#each typeOptions as option (option.value)}
         <button
           type="button"
-          class={`min-h-10 min-w-0 flex-1 px-3 text-sm font-semibold transition-colors ${filters.type === option.value ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "border border-zinc-200 bg-white text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"}`}
+          class={`motion-tap min-h-10 min-w-0 flex-1 px-3 text-sm font-semibold transition-colors ${filters.type === option.value ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "border border-zinc-200 bg-white text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"}`}
           aria-pressed={filters.type === option.value}
           onclick={() => updateType(option.value)}
         >
@@ -177,7 +177,7 @@
       {#each dateOptions as option (option.value)}
         <button
           type="button"
-          class={`shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${filters.period === option.value ? "border-zinc-800 bg-zinc-900 text-white dark:border-zinc-200 dark:bg-zinc-100 dark:text-zinc-900" : "border-transparent text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"}`}
+          class={`motion-tap shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${filters.period === option.value ? "border-zinc-800 bg-zinc-900 text-white dark:border-zinc-200 dark:bg-zinc-100 dark:text-zinc-900" : "border-transparent text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"}`}
           aria-pressed={filters.period === option.value}
           onclick={() => updatePeriod(option.value)}
         >
@@ -186,7 +186,7 @@
       {/each}
       <button
         type="button"
-        class={`shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${filters.period === "custom" ? "border-zinc-800 bg-zinc-900 text-white dark:border-zinc-200 dark:bg-zinc-100 dark:text-zinc-900" : "border-transparent text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"}`}
+        class={`motion-tap shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${filters.period === "custom" ? "border-zinc-800 bg-zinc-900 text-white dark:border-zinc-200 dark:bg-zinc-100 dark:text-zinc-900" : "border-transparent text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"}`}
         aria-pressed={filters.period === "custom"}
         onclick={openCustomDateDialog}
       >
@@ -223,10 +223,10 @@
 
 <dialog
   bind:this={dateDialog}
-  class="fixed inset-0 m-auto hidden max-h-[85dvh] w-[calc(100%-2rem)] max-w-sm overflow-y-auto rounded-xl border border-zinc-200 bg-white p-5 text-zinc-900 shadow-2xl backdrop:bg-zinc-950/60 backdrop:backdrop-blur-sm open:block dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+  class="motion-dialog fixed inset-0 m-auto hidden max-h-[85dvh] w-[calc(100%-2rem)] max-w-sm overflow-y-auto rounded-xl border border-zinc-200 bg-white p-5 text-zinc-900 shadow-2xl backdrop:bg-zinc-950/60 backdrop:backdrop-blur-sm open:block dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
   onclick={closeOnBackdrop}
 >
-  <section>
+  <section class="motion-dialog-panel">
     <header class="mb-5 flex items-center justify-between">
       <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{t("chooseDateRange", $language)}</h2>
       <button

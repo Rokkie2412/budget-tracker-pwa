@@ -70,7 +70,7 @@
 </script>
 
 <main
-  class="mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-4 pb-3"
+  class="motion-page mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-4 pb-3"
 >
   <section class="flex min-h-0 w-full flex-1 flex-col gap-3">
     <header
@@ -96,11 +96,26 @@
 
     {#if isLoading}
       <div
-        class="flex min-h-0 flex-1 items-center justify-center"
+        class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
         role="status"
         aria-label={t("transactionsLoading", $language)}
       >
-        <span class="size-8 animate-spin rounded-full border-2 border-emerald-700 border-r-transparent" aria-hidden="true"></span>
+        <div class="min-h-0 flex-1 space-y-1 overflow-hidden px-3" aria-hidden="true">
+          {#each [0, 1, 2, 3, 4] as row (row)}
+            <div class="flex items-center gap-3 border-b border-zinc-200 py-3 dark:border-zinc-700">
+              <span class="motion-skeleton size-10 shrink-0 rounded-full bg-zinc-200 dark:bg-zinc-700"></span>
+              <span class="flex-1 space-y-2">
+                <span class="motion-skeleton block h-3 w-2/3 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+                <span class="motion-skeleton block h-3 w-1/3 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+              </span>
+              <span class="motion-skeleton h-4 w-16 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+            </div>
+          {/each}
+        </div>
+        <div class="flex shrink-0 items-center justify-between border-t border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800" aria-hidden="true">
+          <span class="motion-skeleton h-3 w-24 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+          <span class="motion-skeleton h-9 w-28 rounded-md bg-zinc-200 dark:bg-zinc-700"></span>
+        </div>
       </div>
     {:else if loadError}
       <div
@@ -128,9 +143,10 @@
         >
           {#each transactions as transaction, index (transaction._id)}
             <div
-              class={index === transactions.length - 1
+              class={`motion-list-item ${index === transactions.length - 1
                 ? ""
-                : "border-b border-zinc-200 dark:border-zinc-700"}
+                : "border-b border-zinc-200 dark:border-zinc-700"}`}
+              style={`--motion-index: ${Math.min(index, 8)}`}
             >
               <TransactionCard
                 onDelete={() => deleteTransaction(transaction)}

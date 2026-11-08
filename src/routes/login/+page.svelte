@@ -51,13 +51,13 @@
 	<meta name="theme-color" content="#f4f4f5" />
 </svelte:head>
 
-<main class="min-h-dvh bg-zinc-100 dark:bg-zinc-800">
+<main class="motion-page min-h-dvh bg-zinc-100 dark:bg-zinc-800">
 	{#if $loadingMask}
 		<LoadingMask text={t("loading")} />
 	{/if}
 
 	<article
-		class="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-white shadow-xl shadow-zinc-900/5 dark:bg-zinc-900"
+                                class="motion-card mx-auto flex min-h-dvh w-full max-w-md flex-col bg-white shadow-xl shadow-zinc-900/5 dark:bg-zinc-900"
 	>
 		<!-- HEADER -->
 		<header
@@ -181,7 +181,7 @@
 
 				<button
 					type="submit"
-					class="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+                                        class="motion-tap flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
 				>
 					{t("signIn")}
 					<svg

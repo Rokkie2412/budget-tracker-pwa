@@ -83,7 +83,7 @@
   };
 </script>
 
-<section class="h-[calc(100dvh-6rem)] overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+<section class="motion-page h-[calc(100dvh-6rem)] overflow-hidden bg-zinc-100 dark:bg-zinc-800">
   <article
     class="mx-auto flex h-full w-full max-w-md flex-col overflow-y-auto bg-white shadow-xl shadow-zinc-900/5 dark:bg-zinc-900"
   >
@@ -101,9 +101,49 @@
     <div
       class="-mt-8 flex flex-col px-5 pb-6"
     >
-      <form onsubmit={saveSettings}>
+      <form onsubmit={saveSettings} aria-busy={isLoading}>
+        {#if isLoading}
+          <div role="status" aria-label={t("loading", $language)}>
+            <div class="motion-card rounded-xl border border-zinc-200 bg-white p-4 shadow-md shadow-zinc-900/5 dark:border-zinc-700 dark:bg-zinc-900">
+              <div class="flex items-center gap-3">
+                <span class="motion-skeleton size-20 shrink-0 rounded-full bg-zinc-200 dark:bg-zinc-700"></span>
+                <span class="flex-1 space-y-2">
+                  <span class="motion-skeleton block h-4 w-28 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+                  <span class="motion-skeleton block h-3 w-40 max-w-full rounded bg-zinc-200 dark:bg-zinc-700"></span>
+                </span>
+                <span
+                  class="motion-loading-spinner size-5 shrink-0 rounded-full border-2 border-emerald-700 border-r-transparent"
+                  aria-hidden="true"
+                ></span>
+              </div>
+              <div class="mt-5 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <span class="motion-skeleton mb-2 block h-3 w-24 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+                <span class="motion-skeleton block h-12 w-full rounded-lg bg-zinc-200 dark:bg-zinc-700"></span>
+              </div>
+            </div>
+
+            <div class="motion-card mt-7 space-y-4">
+              <span class="motion-skeleton mb-2 block h-3 w-28 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+              <div class="space-y-4 border-y border-zinc-200 py-4 dark:border-zinc-700">
+                <span class="motion-skeleton block h-3 w-20 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+                <div class="grid grid-cols-2 gap-2">
+                  <span class="motion-skeleton h-10 rounded-lg bg-zinc-200 dark:bg-zinc-700"></span>
+                  <span class="motion-skeleton h-10 rounded-lg bg-zinc-200 dark:bg-zinc-700"></span>
+                </div>
+                <span class="motion-skeleton block h-3 w-16 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+                <div class="grid grid-cols-2 gap-2">
+                  <span class="motion-skeleton h-10 rounded-lg bg-zinc-200 dark:bg-zinc-700"></span>
+                  <span class="motion-skeleton h-10 rounded-lg bg-zinc-200 dark:bg-zinc-700"></span>
+                </div>
+                <span class="motion-skeleton block h-10 w-full rounded-lg bg-zinc-200 dark:bg-zinc-700"></span>
+              </div>
+              <span class="motion-skeleton block h-11 w-full rounded-lg bg-zinc-200 dark:bg-zinc-700"></span>
+            </div>
+          </div>
+        {:else}
+
         <div
-          class="rounded-xl border border-zinc-200 bg-white p-4 shadow-md shadow-zinc-900/5 dark:border-zinc-700 dark:bg-zinc-900"
+          class="motion-card rounded-xl border border-zinc-200 bg-white p-4 shadow-md shadow-zinc-900/5 dark:border-zinc-700 dark:bg-zinc-900"
         >
           <InitialProfile name={userName || t("profileTitle", $language)} />
           <label class="mt-4 flex flex-col gap-2 border-t border-zinc-200 pt-3 dark:border-zinc-700">
@@ -226,7 +266,7 @@
         <button
           type="submit"
           disabled={isLoading || isSaving}
-          class="mt-5 flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+          class="motion-tap mt-5 flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-700 px-4 font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {#if isSaving}
             {t("loading", $language)}
@@ -234,13 +274,14 @@
             {t("saveProfileSettings", $language)}
           {/if}
         </button>
+        {/if}
       </form>
     </div>
 
     <button
       onclick={onClickLogOut}
       type="button"
-      class="mb-5 mt-auto flex min-h-11 shrink-0 items-center justify-center gap-2 self-center rounded-lg bg-rose-700 px-5 font-semibold text-white hover:bg-rose-800"
+      class="motion-tap mb-5 mt-auto flex min-h-11 shrink-0 items-center justify-center gap-2 self-center rounded-lg bg-rose-700 px-5 font-semibold text-white hover:bg-rose-800"
     >
       <svg
         aria-hidden="true"

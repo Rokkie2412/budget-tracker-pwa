@@ -88,7 +88,7 @@
 </script>
 
 <main
-  class="mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-5 pb-4"
+  class="motion-page mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-5 pb-4"
 >
   <section class="flex min-h-0 w-full flex-1 flex-col gap-4">
     <header class="shrink-0 border-b border-zinc-200 dark:border-zinc-700 pb-4">
@@ -133,8 +133,31 @@
 
     <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain" aria-label={monthLabel}>
       {#if isLoading}
-        <div class="flex min-h-48 items-center justify-center" role="status" aria-label={t("transactionsLoading", $language)}>
-          <span class="size-8 animate-spin rounded-full border-2 border-emerald-700 border-r-transparent" aria-hidden="true"></span>
+        <div class="space-y-5 py-1" role="status" aria-label={t("transactionsLoading", $language)}>
+          <section class="motion-card overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900" aria-hidden="true">
+            <div class="space-y-3 px-4 py-3">
+              <span class="motion-skeleton block h-3 w-24 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+              <span class="motion-skeleton block h-7 w-2/3 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+            </div>
+            <div class="space-y-2 border-t border-zinc-100 px-4 py-3 dark:border-zinc-700">
+              <span class="motion-skeleton block h-3 w-20 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+              <span class="motion-skeleton block h-5 w-1/2 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+            </div>
+            <div class="space-y-2 border-t border-zinc-100 px-4 py-3 dark:border-zinc-700">
+              <span class="motion-skeleton block h-3 w-24 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+              <span class="motion-skeleton block h-5 w-1/2 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+            </div>
+          </section>
+          <span class="motion-skeleton block h-12 w-full rounded-lg bg-zinc-200 dark:bg-zinc-700" aria-hidden="true"></span>
+          <section class="motion-card space-y-3" aria-hidden="true">
+            <span class="motion-skeleton mb-3 block h-4 w-36 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+            {#each [0, 1, 2] as row (row)}
+              <div class="flex items-center justify-between gap-3 border-b border-zinc-100 py-3 dark:border-zinc-700">
+                <span class="motion-skeleton h-4 w-2/5 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+                <span class="motion-skeleton h-4 w-1/4 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+              </div>
+            {/each}
+          </section>
         </div>
       {:else if errorMessage}
         <div class="flex min-h-48 flex-col items-center justify-center gap-3 text-center" role="alert">
@@ -145,7 +168,7 @@
           </button>
         </div>
       {:else if report}
-        <section class="mb-5 w-full rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900" aria-label={t("reportsTitle", $language)}>
+        <section class="motion-card motion-lift mb-5 w-full rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900" aria-label={t("reportsTitle", $language)}>
         <div class="px-4 py-3">
           <div class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t("reportBalance", $language)}</div>
           <div class={`text-2xl font-bold ${report.summary.total >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-rose-700 dark:text-rose-300"}`}>
@@ -168,7 +191,7 @@
 
         <button
           type="button"
-          class="mb-5 flex w-full items-center justify-between rounded-lg border border-emerald-200 px-4 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-200 dark:hover:bg-emerald-950"
+          class="motion-tap mb-5 flex w-full items-center justify-between rounded-lg border border-emerald-200 px-4 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-200 dark:hover:bg-emerald-950"
           onclick={() => goto("/dashboard/monthly-report-detail")}
         >
           {t("viewReportDetails", $language)}
@@ -196,8 +219,11 @@
               <h2 class="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-100">{section.title}</h2>
               {#if section.items.length > 0}
                 <ul class="w-full divide-y divide-zinc-100 dark:divide-zinc-700">
-                  {#each section.items as item (item.category)}
-                    <li class="flex items-center justify-between gap-3 py-3">
+                  {#each section.items as item, index (item.category)}
+                    <li
+                      class="motion-list-item flex items-center justify-between gap-3 py-3"
+                      style={`--motion-index: ${Math.min(index, 8)}`}
+                    >
                       <div class="flex min-w-0 items-center gap-2">
                         <span class="text-lg" aria-hidden="true">{ALL_CATEGORY_EMOJIS[item.category]}</span>
                         <span class="truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">

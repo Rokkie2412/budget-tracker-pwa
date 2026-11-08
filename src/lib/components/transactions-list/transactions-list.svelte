@@ -44,7 +44,7 @@
       <div class="shrink-0">
         <button
           type="button"
-          class="grid size-9 place-items-center rounded-lg text-zinc-500 transition-colors hover:bg-rose-50 hover:text-rose-700 dark:text-zinc-400 dark:hover:bg-rose-950 dark:hover:text-rose-300"
+          class="motion-tap grid size-9 place-items-center rounded-lg text-zinc-500 transition-colors hover:bg-rose-50 hover:text-rose-700 dark:text-zinc-400 dark:hover:bg-rose-950 dark:hover:text-rose-300"
           aria-label={t(isDeleting ? "deletingTransaction" : "deleteTransaction", $language).replace("{title}", title)}
           disabled={isDeleting}
           onclick={onDelete}

@@ -12,7 +12,7 @@
 <div class="fixed top-4 left-1/2 z-[100] flex w-[min(calc(100%-2rem),28rem)] -translate-x-1/2 flex-col gap-2">
 	{#each $toasts as item (item.id)}
 		<div
-			class={`flex items-center justify-between gap-4 rounded-lg border px-4 py-3 text-sm shadow-lg ${toastClasses[item.type]}`}
+                        class={`motion-toast flex items-center justify-between gap-4 rounded-lg border px-4 py-3 text-sm shadow-lg ${toastClasses[item.type]}`}
 			role={item.type === "error" ? "alert" : "status"}
 		>
 			<span>{item.message}</span>

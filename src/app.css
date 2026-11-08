@@ -6,3 +6,254 @@
 @theme {
   --font-sans: 'Figtree', sans-serif;
 }
+
+@keyframes motion-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes motion-item-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes motion-chart-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes motion-dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes motion-toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes motion-nav-pop {
+  50% {
+    transform: translateY(-3px) scale(1.08);
+  }
+}
+
+@keyframes motion-skeleton-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes motion-refresh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pull-refresh-indicator {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 0.75rem);
+  left: 50%;
+  z-index: 80;
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid rgb(228 228 231 / 90%);
+  border-radius: 9999px;
+  background: white;
+  color: rgb(4 120 87);
+  box-shadow: 0 8px 24px rgb(24 24 27 / 12%);
+  transform: translate(-50%, calc(var(--pull-offset, 0px) - 100%));
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .motion-page {
+    animation: motion-page-enter 360ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  }
+
+  .motion-card {
+    animation: motion-item-enter 420ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  }
+
+  .motion-list-item {
+    animation: motion-item-enter 300ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+    animation-delay: calc(var(--motion-index, 0) * 35ms);
+  }
+
+  .motion-lift {
+    transition:
+      transform 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .motion-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgb(24 24 27 / 8%);
+  }
+
+  .motion-tap {
+    transition:
+      transform 150ms ease,
+      background-color 180ms ease,
+      color 180ms ease;
+  }
+
+  .motion-tap:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  .motion-nav-item svg {
+    transition: transform 180ms ease;
+  }
+
+  .category-breakdown-chevron {
+    transition: transform 180ms ease;
+  }
+
+  .category-breakdown-chevron.expanded {
+    transform: rotate(180deg);
+  }
+
+  .motion-nav-item:hover svg {
+    transform: translateY(-2px);
+  }
+
+  .motion-nav-item[aria-current="page"] svg {
+    animation: motion-nav-pop 280ms ease-out;
+  }
+
+  .motion-add-button {
+    animation: motion-item-enter 420ms cubic-bezier(0.2, 0.75, 0.25, 1) 120ms both;
+    transition: transform 160ms ease, box-shadow 180ms ease;
+  }
+
+  .motion-add-button:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 12px 22px rgb(4 120 87 / 28%);
+  }
+
+  .motion-add-button:active {
+    transform: scale(0.94);
+  }
+
+  .motion-chart-line {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: motion-chart-draw 900ms cubic-bezier(0.3, 0.7, 0.2, 1) forwards;
+  }
+
+  .motion-chart-line-expense {
+    animation-delay: 120ms;
+  }
+
+  .motion-dialog-panel {
+    animation: motion-dialog-enter 220ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  }
+
+  dialog[open].motion-dialog::backdrop {
+    animation: motion-toast-enter 180ms ease-out both;
+  }
+
+  .motion-toast {
+    animation: motion-toast-enter 220ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  }
+
+  .motion-skeleton {
+    animation: motion-skeleton-pulse 1.2s ease-in-out infinite;
+  }
+
+  .motion-loading-spinner {
+    animation: motion-refresh-spin 850ms linear infinite;
+  }
+
+  .pull-refresh-icon {
+    transform: rotate(var(--pull-angle, 0deg));
+    transition: transform 80ms linear;
+  }
+
+  .pull-refresh-icon.is-refreshing {
+    animation: motion-refresh-spin 850ms linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-page,
+  .motion-card,
+  .motion-list-item,
+  .motion-add-button,
+  .motion-dialog-panel,
+  .motion-toast,
+  .motion-nav-item[aria-current="page"] svg {
+    animation: none !important;
+  }
+
+  .motion-lift,
+  .motion-tap,
+  .motion-nav-item svg {
+    transition: none !important;
+  }
+
+  .category-breakdown-chevron {
+    transition: none !important;
+  }
+
+  .category-breakdown-chevron.expanded {
+    transform: none;
+  }
+
+  .motion-lift:hover,
+  .motion-tap:active:not(:disabled),
+  .motion-nav-item:hover svg,
+  .motion-add-button:hover,
+  .motion-add-button:active {
+    transform: none !important;
+  }
+
+  .motion-chart-line {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+
+  .motion-skeleton {
+    opacity: 0.65;
+  }
+
+  .motion-loading-spinner {
+    animation: none;
+  }
+
+  .pull-refresh-icon {
+    transform: none;
+  }
+}

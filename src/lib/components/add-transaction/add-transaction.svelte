@@ -245,7 +245,7 @@
 <div class="flex h-16 min-w-0 items-center justify-center">
   <button
     type="button"
-    class="relative z-[60] grid size-14 shrink-0 place-items-center rounded-full border-4 border-white bg-emerald-700 text-white shadow-lg shadow-emerald-900/25 transition-transform active:scale-95 dark:border-zinc-900"
+    class="motion-add-button relative z-[60] grid size-14 shrink-0 place-items-center rounded-full border-4 border-white bg-emerald-700 text-white shadow-lg shadow-emerald-900/25 transition-transform active:scale-95 dark:border-zinc-900"
     aria-label={t("addTransaction", $language)}
     title={t("addTransaction", $language)}
     onclick={openDialog}
@@ -266,7 +266,7 @@
 
 <dialog
   bind:this={dialog}
-  class="fixed inset-0 m-auto hidden h-full max-h-none w-full max-w-none items-center justify-center overflow-hidden border-0 bg-transparent p-[max(1rem,env(safe-area-inset-top))_1rem_max(1rem,env(safe-area-inset-bottom))] text-current backdrop:bg-zinc-950/60 backdrop:backdrop-blur-sm open:flex"
+  class="motion-dialog fixed inset-0 m-auto hidden h-full max-h-none w-full max-w-none items-center justify-center overflow-hidden border-0 bg-transparent p-[max(1rem,env(safe-area-inset-top))_1rem_max(1rem,env(safe-area-inset-bottom))] text-current backdrop:bg-zinc-950/60 backdrop:backdrop-blur-sm open:flex"
 >
   <button
     type="button"
@@ -274,7 +274,7 @@
     aria-label={t("cancel", $language)}
     onclick={closeDialog}
   ></button>
-  <section class="relative z-10 max-h-[86dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border border-zinc-200 bg-white px-5 pt-4 pb-5 text-zinc-900 shadow-2xl dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
+  <section class="motion-dialog-panel relative z-10 max-h-[86dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border border-zinc-200 bg-white px-5 pt-4 pb-5 text-zinc-900 shadow-2xl dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
     <header class="mb-5 flex items-center justify-between gap-3">
       <div class="flex min-w-0 items-center gap-3">
         <div
@@ -331,7 +331,7 @@
           type="button"
           aria-pressed={$data.type === "OUT"}
           onclick={() => changeType("OUT")}
-          class={`flex min-h-11 items-center justify-center border px-3 text-sm font-semibold transition-colors ${$data.type === "OUT" ? "border-rose-700 bg-rose-700 text-white" : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"}`}
+          class={`motion-tap flex min-h-11 items-center justify-center border px-3 text-sm font-semibold transition-colors ${$data.type === "OUT" ? "border-rose-700 bg-rose-700 text-white" : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"}`}
         >
           {t("transactionOut", $language)}
         </button>
@@ -339,7 +339,7 @@
           type="button"
           aria-pressed={$data.type === "IN"}
           onclick={() => changeType("IN")}
-          class={`flex min-h-11 items-center justify-center border px-3 text-sm font-semibold transition-colors ${$data.type === "IN" ? "border-emerald-700 bg-emerald-700 text-white" : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"}`}
+          class={`motion-tap flex min-h-11 items-center justify-center border px-3 text-sm font-semibold transition-colors ${$data.type === "IN" ? "border-emerald-700 bg-emerald-700 text-white" : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"}`}
         >
           {t("transactionIn", $language)}
         </button>
@@ -386,7 +386,7 @@
           role="switch"
           aria-checked={$autoCategorization}
           aria-label={t("autoCategorization", $language)}
-          class={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${$autoCategorization ? "bg-emerald-700" : "bg-zinc-300 dark:bg-zinc-700"}`}
+          class={`motion-tap relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${$autoCategorization ? "bg-emerald-700" : "bg-zinc-300 dark:bg-zinc-700"}`}
           onclick={() => setAutoCategorization(!$autoCategorization)}
         >
           <span
@@ -425,7 +425,7 @@
 
       <button
         type="submit"
-        class={`flex h-12 w-full items-center justify-center rounded-lg px-4 font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${$data.type === "IN" ? "bg-emerald-700 hover:bg-emerald-800" : "bg-rose-700 hover:bg-rose-800"}`}
+        class={`motion-tap flex h-12 w-full items-center justify-center rounded-lg px-4 font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${$data.type === "IN" ? "bg-emerald-700 hover:bg-emerald-800" : "bg-rose-700 hover:bg-rose-800"}`}
         disabled={isSaving}
       >
         {#if isSaving}
