@@ -8,7 +8,7 @@
   let { children }: { children: Snippet } = $props();
 </script>
 
-<main class="pb-24">
+<main class="keyboard-adjustable-content pb-24">
   {@render children()}
 </main>
 

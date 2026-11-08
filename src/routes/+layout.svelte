@@ -3,6 +3,8 @@
 
   import { App } from "@capacitor/app";
   import { Capacitor } from "@capacitor/core";
+  import { Keyboard, KeyboardResize } from "@capacitor/keyboard";
+  import { StatusBar, Style } from "@capacitor/status-bar";
   import { onMount } from "svelte";
 
   import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
@@ -98,6 +100,47 @@
     isRefreshing ||
     page.url.pathname === "/dashboard/profile" ||
     Boolean(document.querySelector("dialog[open]"));
+
+  /** @param {"light" | "dark"} mode */
+  const syncStatusBarTheme = async (mode) => {
+    try {
+      await StatusBar.setOverlaysWebView({ overlay: false });
+      await StatusBar.setBackgroundColor({
+        color: mode === "dark" ? "#18181b" : "#ffffff",
+      });
+      await StatusBar.setStyle({
+        style: mode === "dark" ? Style.Light : Style.Dark,
+      });
+    } catch (error) {
+      console.error("Could not sync the status bar with the app theme", error);
+    }
+  };
+
+  const handleKeyboardShow = () => {
+    document.documentElement.dataset.keyboardOpen = "true";
+
+    const focusedElement = document.activeElement;
+    if (
+      !(focusedElement instanceof HTMLElement) ||
+      !focusedElement.matches("input, textarea, select, [contenteditable='true']")
+    ) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      if (focusedElement.isConnected) {
+        focusedElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest",
+        });
+      }
+    }, 80);
+  };
+
+  const handleKeyboardHide = () => {
+    delete document.documentElement.dataset.keyboardOpen;
+  };
 
   /** @param {EventTarget | null} target */
   const findScrollContainer = (target) => {
@@ -232,9 +275,17 @@
     loadTheme();
     loadAutoCategorization();
 
+    const removeThemeListener =
+      Capacitor.getPlatform() === "android"
+        ? theme.subscribe((mode) => {
+            void syncStatusBarTheme(mode);
+          })
+        : () => {};
+
     let active = true;
     /** @type {(() => void) | undefined} */
     let removeAppUrlListener;
+    let removeKeyboardListeners = () => {};
     if (Capacitor.isNativePlatform()) {
       void App.addListener("appUrlOpen", ({ url }) => {
         void handleAppUrl(url);
@@ -257,6 +308,32 @@
         .catch((error) => {
           console.error("Could not read the app launch URL", error);
         });
+
+      void Promise.all([
+        Keyboard.addListener("keyboardDidShow", handleKeyboardShow),
+        Keyboard.addListener("keyboardDidHide", handleKeyboardHide),
+      ])
+        .then((listeners) => {
+          const removeListeners = () => {
+            listeners.forEach((listener) => void listener.remove());
+          };
+          if (!active) {
+            removeListeners();
+            return;
+          }
+          removeKeyboardListeners = removeListeners;
+        })
+        .catch((error) => {
+          console.error("Could not register keyboard listeners", error);
+        });
+
+      if (Capacitor.getPlatform() === "ios") {
+        void Keyboard.setResizeMode({ mode: KeyboardResize.Native }).catch(
+          (error) => {
+            console.error("Could not configure keyboard resizing", error);
+          },
+        );
+      }
     } else if (page.url.pathname === "/login") {
       void handleAppUrl(window.location.href);
     }
@@ -268,7 +345,10 @@
 
     return () => {
       active = false;
+      removeThemeListener();
       removeAppUrlListener?.();
+      removeKeyboardListeners();
+      handleKeyboardHide();
       document.removeEventListener("touchstart", handleTouchStart);
       document.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("touchend", handleTouchEnd);
@@ -276,6 +356,13 @@
     };
   });
 </script>
+
+<svelte:head>
+  <meta
+    name="theme-color"
+    content={$theme === "dark" ? "#18181b" : "#ffffff"}
+  />
+</svelte:head>
 
 <div data-theme={$theme} class="min-h-dvh bg-white text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
   {#if authCheckPending}

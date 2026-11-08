@@ -17,9 +17,15 @@ importers:
       '@capacitor/core':
         specifier: ^8.5.3
         version: 8.5.3
+      '@capacitor/keyboard':
+        specifier: 8.0.0
+        version: 8.0.0(@capacitor/core@8.5.3)
       '@capacitor/preferences':
         specifier: ^8.0.1
         version: 8.0.1(@capacitor/core@8.5.3)
+      '@capacitor/status-bar':
+        specifier: 8.0.0
+        version: 8.0.0(@capacitor/core@8.5.3)
       '@felte/validator-yup':
         specifier: ^1.1.4
         version: 1.1.4(yup@1.7.1)
@@ -125,8 +131,18 @@ packages:
   '@capacitor/core@8.5.3':
     resolution: {integrity: sha512-oBE1oGuYE4ZzYYrulC75OuHdSsD6zLUy7d5o1tFwDLG4govGoubY15cxpiI5l0+q87Lm5p0bhbehMdzJg4aFag==}
 
+  '@capacitor/keyboard@8.0.0':
+    resolution: {integrity: sha512-ycPW6iQyFwzDK95jihesj5EGiyyGSfbBqNek11iNp9tBOB7zDeYkUA2S/vPpOETt3dhP6pWr7a9gNVGuEfj11g==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
+
   '@capacitor/preferences@8.0.1':
     resolution: {integrity: sha512-T6no3ebi79XJCk91U3Jp/liJUwgBdvHR+s6vhvPkPxSuch7z3zx5Rv1bdWM6sWruNx+pViuEGqZvbfCdyBvcHQ==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
+
+  '@capacitor/status-bar@8.0.0':
+    resolution: {integrity: sha512-aIj3bc7z8lfPgOen8HlrBrkfnxpFnh21OCx6jCUx4Mvv+B6eEkUQ49b32DOddgVfr+igRHLX2SYi7duqIsNDXg==}
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
 
@@ -2007,7 +2023,15 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
+  '@capacitor/keyboard@8.0.0(@capacitor/core@8.5.3)':
+    dependencies:
+      '@capacitor/core': 8.5.3
+
   '@capacitor/preferences@8.0.1(@capacitor/core@8.5.3)':
+    dependencies:
+      '@capacitor/core': 8.5.3
+
+  '@capacitor/status-bar@8.0.0(@capacitor/core@8.5.3)':
     dependencies:
       '@capacitor/core': 8.5.3
 
