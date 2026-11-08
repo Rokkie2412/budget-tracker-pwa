@@ -104,7 +104,7 @@
   /** @param {"light" | "dark"} mode */
   const syncStatusBarTheme = async (mode) => {
     try {
-      await StatusBar.setOverlaysWebView({ overlay: false });
+      await StatusBar.setOverlaysWebView({ overlay: true });
       await StatusBar.setBackgroundColor({
         color: mode === "dark" ? "#18181b" : "#ffffff",
       });

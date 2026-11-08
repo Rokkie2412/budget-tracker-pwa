@@ -3,7 +3,8 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-html[data-keyboard-open="true"] nav[aria-label="Navigasi utama"] {
+html[data-keyboard-open="true"]:not(:has(dialog[open]))
+  nav[aria-label="Navigasi utama"] {
   display: none;
 }
 

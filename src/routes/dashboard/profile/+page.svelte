@@ -88,7 +88,7 @@
     class="mx-auto flex h-full w-full max-w-md flex-col overflow-y-auto bg-white shadow-xl shadow-zinc-900/5 dark:bg-zinc-900"
   >
     <header
-      class="shrink-0 bg-gradient-to-br from-emerald-700 via-teal-700 to-sky-800 px-6 pt-6 pb-14 text-white"
+      class="shrink-0 bg-gradient-to-br from-emerald-700 via-teal-700 to-sky-800 px-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-14 text-white"
     >
       <p class="text-xs font-semibold uppercase text-emerald-100">
         {t("profileAccount", $language)}

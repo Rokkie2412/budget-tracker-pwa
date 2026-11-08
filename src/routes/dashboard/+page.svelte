@@ -247,7 +247,7 @@
 </script>
 
 <main
-  class="motion-page mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-5 pb-4"
+  class="motion-page mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-[calc(1.25rem+env(safe-area-inset-top))] pb-4"
 >
   <section class="flex min-h-0 w-full flex-1 flex-col gap-4">
     <header class="flex shrink-0 items-end justify-between gap-3 border-b border-zinc-200 bg-white pb-4 dark:border-zinc-700 dark:bg-zinc-900">

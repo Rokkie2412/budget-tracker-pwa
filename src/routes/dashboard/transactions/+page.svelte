@@ -111,7 +111,7 @@
 </script>
 
 <main
-  class="motion-page mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-4 pb-3"
+  class="motion-page mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-3"
 >
   <section class="flex min-h-0 w-full flex-1 flex-col gap-3">
     <header
