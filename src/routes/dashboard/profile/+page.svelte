@@ -4,7 +4,7 @@
 
   import { goto } from "$app/navigation";
 
-  import { InitialProfile } from "@/lib/components";
+  import { InitialProfile, LoadingMask } from "@/lib/components";
   import { removeAuth } from "@/lib/services/auth";
   import {
     fetchProfileSettings,
@@ -16,7 +16,11 @@
 
   let userName = $state("");
   let phoneNumber = $state("");
+  let savedPhoneNumber = $state("");
   let allowChat = $state(false);
+  let savedAllowChat = $state(false);
+  let selectedLanguage = $state($language);
+  let selectedTheme = $state($theme);
   let isLoading = $state(true);
   let isSaving = $state(false);
   const parsedPhoneNumber = $derived(
@@ -31,9 +35,19 @@
   const loadProfileSettings = async () => {
     try {
       const settings = await fetchProfileSettings();
+      selectedLanguage = $language;
+      selectedTheme = $theme;
       userName = settings.name;
       phoneNumber = settings.phoneNumber;
+      const savedPhone = parsePhoneNumberFromString(
+        settings.phoneNumber,
+        "ID",
+      );
+      savedPhoneNumber = savedPhone?.isValid()
+        ? savedPhone.number
+        : settings.phoneNumber.trim();
       allowChat = settings.allowChat;
+      savedAllowChat = settings.allowChat;
     } catch (error) {
       showToast(
         error instanceof Error ? error.message : t("profileLoadFailed", $language),
@@ -48,16 +62,38 @@
     event.preventDefault();
     if (isSaving) return;
 
-    if (phoneNumber.trim() && !validPhoneNumber) {
+    const nextPhoneNumber = normalizedPhoneNumber;
+    const phoneNumberChanged = validPhoneNumber
+      ? nextPhoneNumber !== savedPhoneNumber
+      : phoneNumber.trim() !== savedPhoneNumber;
+    if (phoneNumberChanged && phoneNumber.trim() && !validPhoneNumber) {
       showToast(t("invalidPhoneNumber", $language), "error");
       return;
     }
 
-    isSaving = true;
+    const nextAllowChat = allowChat && nextPhoneNumber.length > 0;
+    const allowChatChanged = nextAllowChat !== savedAllowChat;
+    const hasRemoteChanges = phoneNumberChanged || allowChatChanged;
+    isSaving = hasRemoteChanges;
 
     try {
-      await saveProfileSettings(normalizedPhoneNumber, allowChat && canUseWhatsApp);
-      phoneNumber = normalizedPhoneNumber;
+      if (hasRemoteChanges) {
+        await saveProfileSettings({
+          ...(phoneNumberChanged ? { phoneNumber: nextPhoneNumber } : {}),
+          ...(allowChatChanged ? { allowChat: nextAllowChat } : {}),
+        });
+      }
+
+      if (phoneNumberChanged) {
+        phoneNumber = nextPhoneNumber;
+        savedPhoneNumber = nextPhoneNumber;
+      } else if (validPhoneNumber) {
+        phoneNumber = nextPhoneNumber;
+      }
+      allowChat = nextAllowChat;
+      savedAllowChat = nextAllowChat;
+      setLanguage(selectedLanguage);
+      setTheme(selectedTheme);
       showToast(t("profileSettingsSaved", $language), "success");
     } catch (error) {
       showToast(
@@ -67,6 +103,13 @@
     } finally {
       isSaving = false;
     }
+  };
+
+  const handleAllowChatClick = (event: MouseEvent) => {
+    if (canUseWhatsApp) return;
+
+    event.preventDefault();
+    showToast(t("whatsappPhoneRequired", $language), "error");
   };
 
   $effect(() => {
@@ -83,7 +126,10 @@
   };
 </script>
 
-<section class="motion-page h-[calc(100dvh-6rem)] overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+<section
+  class="motion-page h-[calc(100dvh-6rem)] overflow-hidden bg-zinc-100 dark:bg-zinc-800"
+  aria-busy={isLoading || isSaving}
+>
   <article
     class="mx-auto flex h-full w-full max-w-md flex-col overflow-y-auto bg-white shadow-xl shadow-zinc-900/5 dark:bg-zinc-900"
   >
@@ -101,7 +147,7 @@
     <div
       class="-mt-8 flex flex-col px-5 pb-6"
     >
-      <form onsubmit={saveSettings} aria-busy={isLoading}>
+      <form onsubmit={saveSettings} aria-busy={isLoading || isSaving}>
         {#if isLoading}
           <div role="status" aria-label={t("loading", $language)}>
             <div class="motion-card rounded-xl border border-zinc-200 bg-white p-4 shadow-md shadow-zinc-900/5 dark:border-zinc-700 dark:bg-zinc-900">
@@ -184,8 +230,8 @@
                   name="profile-language"
                   class="size-4 accent-emerald-700"
                   value="id"
-                  checked={$language === "id"}
-                  onchange={() => setLanguage("id")}
+                  checked={selectedLanguage === "id"}
+                  onchange={() => (selectedLanguage = "id")}
                 />
                 <span>Bahasa Indonesia</span>
               </label>
@@ -197,8 +243,8 @@
                   name="profile-language"
                   class="size-4 accent-emerald-700"
                   value="en"
-                  checked={$language === "en"}
-                  onchange={() => setLanguage("en")}
+                  checked={selectedLanguage === "en"}
+                  onchange={() => (selectedLanguage = "en")}
                 />
                 <span>English</span>
               </label>
@@ -218,8 +264,8 @@
                   name="profile-theme"
                   class="size-4 accent-emerald-700"
                   value="light"
-                  checked={$theme === "light"}
-                  onchange={() => setTheme("light")}
+                  checked={selectedTheme === "light"}
+                  onchange={() => (selectedTheme = "light")}
                 />
                 <span>{t("themeLight", $language)}</span>
               </label>
@@ -231,8 +277,8 @@
                   name="profile-theme"
                   class="size-4 accent-emerald-700"
                   value="dark"
-                  checked={$theme === "dark"}
-                  onchange={() => setTheme("dark")}
+                  checked={selectedTheme === "dark"}
+                  onchange={() => (selectedTheme = "dark")}
                 />
                 <span>{t("themeDark", $language)}</span>
               </label>
@@ -255,8 +301,12 @@
             <input
               type="checkbox"
               bind:checked={allowChat}
-              disabled={!canUseWhatsApp || isLoading || isSaving}
+              disabled={isLoading || isSaving}
+              aria-disabled={!canUseWhatsApp}
+              onclick={handleAllowChatClick}
               class="size-5 accent-emerald-700"
+              class:cursor-not-allowed={!canUseWhatsApp}
+              class:opacity-50={!canUseWhatsApp}
               aria-label={t("allowChatLabel", $language)}
             />
           </label>
@@ -302,3 +352,7 @@
     </button>
   </article>
 </section>
+
+{#if isSaving}
+  <LoadingMask text={t("loading", $language)} />
+{/if}

@@ -26,14 +26,26 @@ export const PATCH: RequestHandler = async ({ locals, request }) => {
     return json({ message: "Invalid profile settings." }, { status: 400 });
   }
 
-  const { phoneNumber, allowChat } = body as Record<string, unknown>;
+  const changes = body as Record<string, unknown>;
+  const hasPhoneNumber = Object.prototype.hasOwnProperty.call(
+    changes,
+    "phoneNumber",
+  );
+  const hasAllowChat = Object.prototype.hasOwnProperty.call(
+    changes,
+    "allowChat",
+  );
+  const phoneNumber = changes.phoneNumber;
+  const allowChat = changes.allowChat;
   if (
-    typeof phoneNumber !== "string" ||
-    phoneNumber.length > 16 ||
-    (phoneNumber !== "" && !/^\+[1-9]\d{1,14}$/.test(phoneNumber)) ||
-    typeof allowChat !== "boolean"
+    (!hasPhoneNumber && !hasAllowChat) ||
+    (hasPhoneNumber &&
+      (typeof phoneNumber !== "string" ||
+        phoneNumber.length > 16 ||
+        (phoneNumber !== "" && !/^\+[1-9]\d{1,14}$/.test(phoneNumber)))) ||
+    (hasAllowChat && typeof allowChat !== "boolean")
   ) {
-    return json({ message: "Enter a valid international phone number." }, { status: 400 });
+    return json({ message: "Invalid profile settings." }, { status: 400 });
   }
 
   const serviceRoleKey = dev
@@ -61,22 +73,65 @@ export const PATCH: RequestHandler = async ({ locals, request }) => {
     return json({ message: "Could not load the signed-in profile." }, { status: 502 });
   }
 
-  const attributes = {
-    user_metadata: {
-      ...currentUser.user.user_metadata,
-      phoneNumber,
-      allowChat: Boolean(phoneNumber) && allowChat,
-    },
-    ...(phoneNumber !== (currentUser.user.phone ?? "")
-      ? { phone: phoneNumber }
-      : {}),
-  };
-  const { error: updateError } = await admin.auth.admin.updateUserById(
-    userId,
-    attributes,
-  );
-  if (updateError) {
-    return json({ message: updateError.message }, { status: 400 });
+  const currentPhoneNumber = currentUser.user.phone ?? "";
+  const nextPhoneNumber = hasPhoneNumber
+    ? (phoneNumber as string)
+    : currentPhoneNumber;
+  if (hasPhoneNumber && nextPhoneNumber !== currentPhoneNumber) {
+    const userMetadata = { ...currentUser.user.user_metadata };
+    delete userMetadata.allowChat;
+    delete userMetadata.phoneNumber;
+    const { error: updateError } = await admin.auth.admin.updateUserById(
+      userId,
+      {
+        phone: nextPhoneNumber,
+        user_metadata: userMetadata,
+      },
+    );
+    if (updateError) {
+      return json({ message: updateError.message }, { status: 400 });
+    }
+  }
+
+  const shouldUpdateChat =
+    hasAllowChat || (hasPhoneNumber && nextPhoneNumber === "");
+  if (shouldUpdateChat) {
+    const { data: currentPreferences, error: preferenceReadError } =
+      await admin
+        .from("user_preferences")
+        .select("allow_chat")
+        .eq("user_id", userId)
+        .maybeSingle();
+    if (preferenceReadError) {
+      return json(
+        { message: "Could not load the chat preference." },
+        { status: 500 },
+      );
+    }
+
+    const nextAllowChat = Boolean(nextPhoneNumber) && Boolean(allowChat);
+    if ((currentPreferences?.allow_chat ?? false) !== nextAllowChat) {
+      const { error: preferenceError } = await admin
+        .from("user_preferences")
+        .upsert(
+          {
+            user_id: userId,
+            allow_chat: nextAllowChat,
+          },
+          { onConflict: "user_id" },
+        );
+      if (preferenceError) {
+        console.error("Could not save the chat preference.", preferenceError);
+        return json(
+          {
+            message: hasPhoneNumber
+              ? "Phone number was updated, but chat preference could not be saved."
+              : "Could not save the chat preference.",
+          },
+          { status: 500 },
+        );
+      }
+    }
   }
 
   return json({ message: "Profile settings saved." });

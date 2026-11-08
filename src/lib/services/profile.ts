@@ -8,6 +8,11 @@ export type ProfileSettings = {
   allowChat: boolean;
 };
 
+export type ProfileSettingsChanges = {
+  phoneNumber?: string;
+  allowChat?: boolean;
+};
+
 const getAuthenticatedClient = async () => {
   const credentials = await checkAuth();
   if (!credentials) throw new Error("You must be signed in to update profile settings.");
@@ -43,37 +48,40 @@ const persistCurrentSession = async (
 };
 
 export const fetchProfileSettings = async (): Promise<ProfileSettings> => {
-  const credentials = await checkAuth();
-  if (!credentials) throw new Error("You must be signed in to view profile settings.");
+  const { supabase, fallbackEmail } = await getAuthenticatedClient();
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData.user) {
+    throw authError ?? new Error("Could not load the signed-in user.");
+  }
 
-  const { data, error } = await createSupabaseClient().auth.getUser(
-    credentials.accessToken,
-  );
-  if (error) throw error;
-
-  const metadata = data.user.user_metadata ?? {};
-  const phoneNumber =
-    typeof metadata.phoneNumber === "string"
-      ? metadata.phoneNumber
-      : data.user.phone ?? "";
+  const user = authData.user;
+  const metadata = user.user_metadata ?? {};
   const metadataName =
     typeof metadata.full_name === "string"
       ? metadata.full_name
       : typeof metadata.name === "string"
         ? metadata.name
         : "";
+  const { data: preferences, error: preferencesError } = await supabase
+    .from("user_preferences")
+    .select("allow_chat")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  await persistCurrentSession(supabase, fallbackEmail);
+  if (preferencesError) throw preferencesError;
 
   return {
-    name: metadataName || data.user.email || "",
-    phoneNumber,
-    allowChat: Boolean(phoneNumber) && metadata.allowChat === true,
+    name: metadataName || user.email || "",
+    phoneNumber: user.phone ?? "",
+    allowChat: Boolean(user.phone) && preferences?.allow_chat === true,
   };
 };
 
 export const saveProfileSettings = async (
-  phoneNumber: string,
-  allowChat: boolean,
+  changes: ProfileSettingsChanges,
 ): Promise<void> => {
+  if (Object.keys(changes).length === 0) return;
+
   const { supabase, fallbackEmail } = await getAuthenticatedClient();
   const { data, error } = await supabase.auth.getSession();
   if (error || !data.session) {
@@ -86,7 +94,7 @@ export const saveProfileSettings = async (
       "Content-Type": "application/json",
       Authorization: `Bearer ${data.session.access_token}`,
     },
-    body: JSON.stringify({ phoneNumber, allowChat }),
+    body: JSON.stringify(changes),
   });
   const result = (await response.json().catch(() => ({}))) as {
     message?: string;
