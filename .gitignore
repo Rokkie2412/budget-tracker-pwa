@@ -26,3 +26,5 @@ vite.config.ts.timestamp-*
 
 # VSCode
 .vscode/
+.vercel
+.env*
