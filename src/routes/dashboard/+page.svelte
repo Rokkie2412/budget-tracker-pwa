@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { slide } from "svelte/transition";
 
   import { getCategoryTranslationKey } from "@/i18n";
   import { Pagination, TransactionCard } from "@/lib/components";
@@ -31,6 +32,7 @@
   let transactionLoading = $state(true);
   let transactionError = $state("");
   let deletingTransactionId = $state<string | null>(null);
+  let expandedCategoryGroups = $state<Record<string, boolean>>({});
   let transactionRequestSequence = 0;
   let observedTransactionRevision = $transactionRevision;
 
@@ -245,7 +247,7 @@
 </script>
 
 <main
-  class="mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-5 pb-4"
+  class="motion-page mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-[calc(1.25rem+env(safe-area-inset-top))] pb-4"
 >
   <section class="flex min-h-0 w-full flex-1 flex-col gap-4">
     <header class="flex shrink-0 items-end justify-between gap-3 border-b border-zinc-200 bg-white pb-4 dark:border-zinc-700 dark:bg-zinc-900">
@@ -261,9 +263,25 @@
 
     <div class="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain pb-6">
       {#if isLoading}
-      <div class="flex min-h-64 flex-1 items-center justify-center" role="status" aria-label={t("transactionsLoading", $language)}>
-        <span class="size-8 animate-spin rounded-full border-2 border-emerald-700 border-r-transparent" aria-hidden="true"></span>
-      </div>
+        <div class="space-y-5" role="status" aria-label={t("transactionsLoading", $language)}>
+          <div class="motion-card space-y-4 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900" aria-hidden="true">
+            <span class="motion-skeleton block h-3 w-28 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+            <span class="motion-skeleton block h-8 w-2/3 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+            <div class="grid grid-cols-2 gap-3">
+              <span class="motion-skeleton h-16 rounded-lg bg-zinc-200 dark:bg-zinc-700"></span>
+              <span class="motion-skeleton h-16 rounded-lg bg-zinc-200 dark:bg-zinc-700"></span>
+            </div>
+          </div>
+          <div class="motion-card space-y-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900" aria-hidden="true">
+            <span class="motion-skeleton block h-4 w-40 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+            <span class="motion-skeleton block aspect-[1.9/1] w-full rounded-lg bg-zinc-200 dark:bg-zinc-700"></span>
+          </div>
+          <div class="motion-card space-y-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900" aria-hidden="true">
+            <span class="motion-skeleton block h-4 w-36 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+            <span class="motion-skeleton block h-10 w-full rounded-md bg-zinc-200 dark:bg-zinc-700"></span>
+            <span class="motion-skeleton block h-10 w-full rounded-md bg-zinc-200 dark:bg-zinc-700"></span>
+          </div>
+        </div>
     {:else if errorMessage}
       <div class="flex min-h-64 flex-col items-center justify-center gap-3 text-center" role="alert">
         <p class="font-semibold text-red-600">{t("dashboardLoadFailed", $language)}</p>
@@ -273,7 +291,7 @@
         </button>
       </div>
     {:else if report}
-      <section class={`w-full overflow-hidden rounded-lg border ${report.summary.total >= 0 ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950" : "border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-950"}`} aria-label={t("reportBalance", $language)}>
+      <section class={`motion-card motion-lift w-full overflow-hidden rounded-lg border ${report.summary.total >= 0 ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950" : "border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-950"}`} aria-label={t("reportBalance", $language)}>
         <div class="px-4 py-4">
           <div class={`text-sm font-medium ${report.summary.total >= 0 ? "text-emerald-800 dark:text-emerald-200" : "text-rose-800 dark:text-rose-200"}`}>
             {t("reportBalance", $language)}
@@ -285,11 +303,11 @@
       </section>
 
       <section class="grid grid-cols-2 gap-3" aria-label={t("dashboardDescription", $language)}>
-        <article class="min-w-0 rounded-lg border border-rose-100 dark:border-rose-800 bg-rose-50/70 dark:bg-rose-950/70 px-3 py-3 dark:border-rose-900 dark:bg-rose-950/60">
+        <article class="motion-card motion-lift min-w-0 rounded-lg border border-rose-100 dark:border-rose-800 bg-rose-50/70 dark:bg-rose-950/70 px-3 py-3 dark:border-rose-900 dark:bg-rose-950/60" style="animation-delay: 70ms">
           <div class="truncate text-sm font-medium text-rose-800 dark:text-rose-200">{t("reportExpenses", $language)}</div>
           <div class="text-lg font-bold text-rose-700 dark:text-rose-300">{formatCurrency(report.summary.expense)}</div>
         </article>
-        <article class="min-w-0 rounded-lg border border-emerald-100 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/70 px-3 py-3 dark:border-emerald-900 dark:bg-emerald-950/60">
+        <article class="motion-card motion-lift min-w-0 rounded-lg border border-emerald-100 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/70 px-3 py-3 dark:border-emerald-900 dark:bg-emerald-950/60" style="animation-delay: 130ms">
           <div class="truncate text-sm font-medium text-emerald-800 dark:text-emerald-200">{t("reportIncome", $language)}</div>
           <div class="text-lg font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(report.summary.income)}</div>
         </article>
@@ -327,6 +345,8 @@
               {/each}
               <path
                 d={chartGeometry.incomePath}
+                pathLength="1"
+                class="motion-chart-line"
                 fill="none"
                 stroke="#10b981"
                 stroke-width="2.25"
@@ -336,6 +356,8 @@
               />
               <path
                 d={chartGeometry.expensePath}
+                pathLength="1"
+                class="motion-chart-line motion-chart-line-expense"
                 fill="none"
                 stroke="#f87171"
                 stroke-width="2.25"
@@ -369,14 +391,41 @@
             {t("dashboardCategoryBreakdown", $language)}
           </h3>
           {#each [
-            { title: t("reportIncome", $language), items: report.categories.income, color: "text-emerald-700 dark:text-emerald-300" },
-            { title: t("reportExpenses", $language), items: report.categories.expenses, color: "text-rose-700 dark:text-rose-300" },
-          ] as categoryGroup (categoryGroup.title)}
-            <details class={`rounded-md border ${categoryGroup.title === t("reportIncome", $language) ? "border-emerald-100 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/50 dark:border-emerald-900 dark:bg-emerald-950/40" : "border-rose-100 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/50 dark:border-rose-900 dark:bg-rose-950/40"}`}>
-              <summary class="cursor-pointer px-3 py-2 text-sm font-medium">
+            { key: "income", title: t("reportIncome", $language), items: report.categories.income, color: "text-emerald-700 dark:text-emerald-300" },
+            { key: "expenses", title: t("reportExpenses", $language), items: report.categories.expenses, color: "text-rose-700 dark:text-rose-300" },
+          ] as categoryGroup (categoryGroup.key)}
+            <div class={`rounded-md border ${categoryGroup.key === "income" ? "border-emerald-100 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/50 dark:border-emerald-900 dark:bg-emerald-950/40" : "border-rose-100 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/50 dark:border-rose-900 dark:bg-rose-950/40"}`}>
+              <button
+                type="button"
+                class="motion-tap flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm font-medium"
+                aria-expanded={expandedCategoryGroups[categoryGroup.key] ?? false}
+                aria-controls={`dashboard-category-${categoryGroup.key}`}
+                onclick={() => {
+                  expandedCategoryGroups[categoryGroup.key] =
+                    !expandedCategoryGroups[categoryGroup.key];
+                }}
+              >
                 {categoryGroup.title}
-              </summary>
-              <ul class="divide-y divide-zinc-100 px-3 dark:divide-zinc-700">
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class:expanded={expandedCategoryGroups[categoryGroup.key]}
+                  class="category-breakdown-chevron size-4 shrink-0"
+                >
+                  <path d="m5 7.5 5 5 5-5" />
+                </svg>
+              </button>
+              {#if expandedCategoryGroups[categoryGroup.key]}
+              <ul
+                id={`dashboard-category-${categoryGroup.key}`}
+                class="divide-y divide-zinc-100 px-3 dark:divide-zinc-700"
+                transition:slide={{ duration: 220 }}
+              >
                 {#each categoryGroup.items as item (item.category)}
                   <li class="flex items-center justify-between gap-3 py-2 text-sm">
                     <span class="truncate text-zinc-700 dark:text-zinc-300">
@@ -392,7 +441,8 @@
                   </li>
                 {/each}
               </ul>
-            </details>
+              {/if}
+            </div>
           {/each}
         </div>
       </section>
@@ -408,8 +458,17 @@
         </header>
 
         {#if transactionLoading}
-          <div class="flex min-h-32 items-center justify-center" role="status" aria-label={t("transactionsLoading", $language)}>
-            <span class="size-6 animate-spin rounded-full border-2 border-emerald-700 border-r-transparent" aria-hidden="true"></span>
+          <div class="space-y-2 py-2" role="status" aria-label={t("transactionsLoading", $language)}>
+            {#each [0, 1, 2] as row (row)}
+              <div class="flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700" aria-hidden="true">
+                <span class="motion-skeleton size-10 shrink-0 rounded-full bg-zinc-200 dark:bg-zinc-700"></span>
+                <span class="flex-1 space-y-2">
+                  <span class="motion-skeleton block h-3 w-2/3 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+                  <span class="motion-skeleton block h-3 w-1/3 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+                </span>
+                <span class="motion-skeleton h-4 w-16 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+              </div>
+            {/each}
           </div>
         {:else if transactionError}
           <div class="flex flex-col items-center gap-2 py-6 text-center" role="alert">
@@ -420,8 +479,11 @@
           </div>
         {:else if transactions.length > 0}
           <ul class="divide-y divide-zinc-100 dark:divide-zinc-700">
-            {#each transactions as transaction (transaction._id)}
-              <li class="py-1">
+            {#each transactions as transaction, index (transaction._id)}
+              <li
+                class="motion-list-item py-1"
+                style={`--motion-index: ${Math.min(index, 8)}`}
+              >
                 <TransactionCard
                   title={transaction.description}
                   date={formatDate(transaction.date)}

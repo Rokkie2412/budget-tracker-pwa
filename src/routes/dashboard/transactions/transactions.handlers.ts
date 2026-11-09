@@ -55,7 +55,7 @@ export const createTransactionHandlers = (state: HandlerState) => {
       if (!authData) throw new Error(t("invalidCredentials"));
 
       const params = new URLSearchParams({
-        userId: authData.phoneNumber,
+        userId: authData.userId,
         page: String(targetPage),
       });
       if (selectedFilters.type !== "all") params.set("type", selectedFilters.type);
@@ -71,14 +71,17 @@ export const createTransactionHandlers = (state: HandlerState) => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${authData.jwtToken}`,
+          Authorization: `Bearer ${authData.accessToken}`,
         },
       });
-      const result = (await response.json()) as TransactionsResponse;
+      const result = (await response.json()) as TransactionsResponse & {
+        message?: string;
+        error?: string;
+      };
 
       if (!response.ok) {
         throw new Error(
-          result.errorMessage ?? `${t("transactionsError")} (${response.status})`,
+          result.error ?? result.message ?? `${t("transactionsError")} (${response.status})`,
         );
       }
       if (requestId !== requestSequence) return;
@@ -132,7 +135,7 @@ export const createTransactionHandlers = (state: HandlerState) => {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${authData.jwtToken}`,
+          Authorization: `Bearer ${authData.accessToken}`,
         },
         body: JSON.stringify({ transactionId: transaction._id }),
       });
@@ -165,8 +168,18 @@ export const createTransactionHandlers = (state: HandlerState) => {
       const totalPages = Math.ceil(totalTransactions / responseData.pagination.limit);
       const currentPage = state.getCurrentPage();
       const targetPage = totalPages > 0 ? Math.min(currentPage, totalPages) : 1;
+      const expectedPageLength = Math.max(
+        0,
+        Math.min(
+          responseData.pagination.limit,
+          totalTransactions - (targetPage - 1) * responseData.pagination.limit,
+        ),
+      );
 
-      if (targetPage !== currentPage && totalPages > 0) {
+      if (
+        targetPage !== currentPage ||
+        remainingTransactions.length !== expectedPageLength
+      ) {
         await fetchTransactions(targetPage);
       } else {
         state.setResponse({

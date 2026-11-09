@@ -1,9 +1,54 @@
-# Svelte library
+# Budget Tracker
+
+## Supabase setup
+
+The app uses Supabase Auth and the `public.transactions` table. Set these
+variables in `.env`:
+
+```dotenv
+PUBLIC_SUPABASE_URL_DEV=https://your-dev-project.supabase.co
+PUBLIC_SUPABASE_PUBLISHABLE_KEY_DEV=your-dev-publishable-key
+PUBLIC_SUPABASE_URL=https://your-prod-project.supabase.co
+PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-prod-publishable-key
+ENCRYPTION_KEY=your-server-only-key-of-at-least-32-bytes
+```
+
+Set `ENCRYPTION_KEY` to a server-only secret with at least 32 bytes. Set the same
+variable in your deployment environment. Never use a `PUBLIC_`
+prefix, include this key in a client/Capacitor build, or commit it to source
+control. Back it up securely: losing or changing the key makes encrypted
+transaction descriptions unreadable.
+
+`pnpm dev` uses the development project. Production and Capacitor builds use
+the production project. Publishable keys are intended for client use; never put
+a Supabase secret or service-role key in these variables.
+
+Configure `public.transactions` with row-level security so authenticated users
+can access only rows whose `"userId"` matches `auth.uid()`. The app uses
+Supabase Auth directly, and transaction ownership uses the Auth user UUID in
+`transactions."userId"`. Enable email/password sign-in in Supabase Auth and
+create accounts there before signing in.
+
+The profile page stores an optional phone contact in Auth user metadata without
+SMS verification. It does not update Supabase Auth's verified phone field or
+send an OTP. Enter phone numbers in international format (for example,
+`+6281234567890`).
+
+If the old signup trigger that wrote to `public.users` is still installed, run
+this once in the Supabase SQL editor:
+
+```sql
+drop trigger if exists on_auth_user_created on auth.users;
+drop function if exists public.handle_new_auth_user();
+```
+
+This repository does not contain database migration scripts; apply database
+changes directly in each Supabase project's SQL editor.
 
 ## Android APK preview (Capacitor)
 
-The Android build bundles the Svelte UI into the APK. SvelteKit's API and MongoDB
-remain on a server; they are not bundled into the app.
+The Android build bundles the Svelte UI into the APK. The SvelteKit API remains
+on a server; Supabase handles authentication and database access.
 
 1. Install Android Studio, including its Android SDK and JDK.
 2. Copy `.env.capacitor.example` to `.env.capacitor`. Set `VITE_API_BASE_URL` to

@@ -1,0 +1,107 @@
+import { checkAuth, setAuth } from "@/lib/services/auth";
+import { createSupabaseClient } from "@/lib/services/supabase";
+import { apiBaseUrl } from "@/lib/utils";
+
+export type ProfileSettings = {
+  name: string;
+  phoneNumber: string;
+  allowChat: boolean;
+};
+
+export type ProfileSettingsChanges = {
+  phoneNumber?: string;
+  allowChat?: boolean;
+};
+
+const getAuthenticatedClient = async () => {
+  const credentials = await checkAuth();
+  if (!credentials) throw new Error("You must be signed in to update profile settings.");
+
+  const supabase = createSupabaseClient();
+  const { data, error } = await supabase.auth.setSession({
+    access_token: credentials.accessToken,
+    refresh_token: credentials.refreshToken,
+  });
+  if (error || !data.user || !data.session) {
+    throw error ?? new Error("Could not restore the signed-in session.");
+  }
+
+  return { supabase, user: data.user, fallbackEmail: credentials.email };
+};
+
+const persistCurrentSession = async (
+  supabase: Awaited<ReturnType<typeof getAuthenticatedClient>>["supabase"],
+  fallbackEmail: string,
+): Promise<void> => {
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session) {
+    throw error ?? new Error("Could not persist the signed-in session.");
+  }
+
+  await setAuth({
+    accessToken: data.session.access_token,
+    refreshToken: data.session.refresh_token,
+    expiresAt: data.session.expires_at ?? Math.floor(Date.now() / 1000) + data.session.expires_in,
+    userId: data.session.user.id,
+    email: data.session.user.email ?? fallbackEmail,
+  });
+};
+
+export const fetchProfileSettings = async (): Promise<ProfileSettings> => {
+  const { supabase, fallbackEmail } = await getAuthenticatedClient();
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData.user) {
+    throw authError ?? new Error("Could not load the signed-in user.");
+  }
+
+  const user = authData.user;
+  const metadata = user.user_metadata ?? {};
+  const metadataName =
+    typeof metadata.full_name === "string"
+      ? metadata.full_name
+      : typeof metadata.name === "string"
+        ? metadata.name
+        : "";
+  const { data: preferences, error: preferencesError } = await supabase
+    .from("user_preferences")
+    .select("allow_chat")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  await persistCurrentSession(supabase, fallbackEmail);
+  if (preferencesError) throw preferencesError;
+
+  return {
+    name: metadataName || user.email || "",
+    phoneNumber: user.phone ?? "",
+    allowChat: Boolean(user.phone) && preferences?.allow_chat === true,
+  };
+};
+
+export const saveProfileSettings = async (
+  changes: ProfileSettingsChanges,
+): Promise<void> => {
+  if (Object.keys(changes).length === 0) return;
+
+  const { supabase, fallbackEmail } = await getAuthenticatedClient();
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session) {
+    throw error ?? new Error("Could not restore the signed-in session.");
+  }
+
+  const response = await fetch(`${apiBaseUrl}/api/profile-settings`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${data.session.access_token}`,
+    },
+    body: JSON.stringify(changes),
+  });
+  const result = (await response.json().catch(() => ({}))) as {
+    message?: string;
+  };
+  if (!response.ok) {
+    throw new Error(result.message ?? "Could not save profile settings.");
+  }
+
+  await persistCurrentSession(supabase, fallbackEmail);
+};

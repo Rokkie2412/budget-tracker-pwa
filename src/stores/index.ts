@@ -1,3 +1,4 @@
+export * from './auto-categorization'
 export * from './loading'
 export * from './theme'
 export * from './toast'

@@ -1,204 +1,123 @@
-import { json, type RequestHandler } from "@sveltejs/kit";
+import { json, type RequestHandler } from '@sveltejs/kit';
 
-import { connectDataBase, hashUserId } from "@/lib/utils/index.server";
-import Transaction from "@/models/transaction-list";
+import { BUDGET_CATEGORIES_EXPENSE, BUDGET_CATEGORIES_INCOME } from '@/constants';
 import type {
-  CategoryBreakdownItem,
-  ExpenseCategory,
-  IncomeCategory,
-  MonthlyReportResponse,
-} from "@/types";
-
-interface AggregationSummaryItem {
-  totalIncome: number;
-  totalExpense: number;
-}
-
-interface AggregationCategoryItem {
-  _id: {
-    type: "IN" | "OUT";
-    category: string;
-  };
-  total: number;
-  count: number;
-}
-
-interface AggregationDailyItem {
-	_id: number;
-	income: number;
-	expense: number;
-}
-
-interface MonthlyReportAggregation {
-  summary: AggregationSummaryItem[];
-  categories: AggregationCategoryItem[];
-  daily: AggregationDailyItem[];
-}
+	CategoryBreakdownItem,
+	ExpenseCategory,
+	IncomeCategory,
+	MonthlyReportResponse,
+} from '@/types';
 
 const getTargetMonth = (searchParams: URLSearchParams) => {
-  const now = new Date();
-  let year = Number(searchParams.get("year")) || now.getFullYear();
-  const monthParam = searchParams.get("month");
-
-  let month = now.getMonth() + 1;
-
-  if (monthParam) {
-    if (/^\d{4}-\d{1,2}$/.test(monthParam)) {
-      const [y, m] = monthParam.split("-").map(Number);
-      year = y;
-      month = m;
-    } else {
-      const parsedMonth = Number(monthParam);
-      if (!isNaN(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12) {
-        month = parsedMonth;
-      }
-    }
-  }
-
-  return { year, month };
+	const now = new Date();
+	const rawMonth = searchParams.get('month');
+	const match = rawMonth?.match(/^(\d{4})-(\d{1,2})$/);
+	const year = match ? Number(match[1]) : Number(searchParams.get('year')) || now.getFullYear();
+	const month = match ? Number(match[2]) : Number(rawMonth) || now.getMonth() + 1;
+	return Number.isInteger(year) && month >= 1 && month <= 12
+		? { year, month }
+		: null;
 };
 
 export const GET: RequestHandler = async ({ locals, url }): Promise<Response> => {
-  try {
-    const rawUserId = url.searchParams.get("userId") ?? "";
-    const normalizedUserId = rawUserId.startsWith(" ")
-      ? "+" + rawUserId.trim()
-      : rawUserId.trim();
+	const userId = locals.user?.userId;
+	const supabase = locals.supabase;
+	if (!userId || !supabase) return json({ message: 'Unauthorized' }, { status: 401 });
 
-    if (!normalizedUserId || locals.user?.userId !== normalizedUserId) {
-      return json(
-        { message: "Unauthorized: You don't have access to this data." },
-        { status: 403 },
-      );
-    }
+	const requestedUserId = url.searchParams.get('userId');
+	if (requestedUserId && requestedUserId !== userId) {
+		return json({ message: "Unauthorized: You don't have access to this data." }, { status: 403 });
+	}
 
-    const userId = normalizedUserId;
+	const targetMonth = getTargetMonth(url.searchParams);
+	if (!targetMonth) return json({ message: 'Invalid month.' }, { status: 400 });
+	const { year, month } = targetMonth;
+	const startDate = new Date(year, month - 1, 1);
+	const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+	const { data: transactions, error } = await supabase
+		.from('transactions')
+		.select('amount, category, created_at')
+		.eq('userId', userId)
+		.gte('created_at', startDate.toISOString())
+		.lte('created_at', endDate.toISOString());
+	if (error) {
+		return json({ message: 'Could not retrieve monthly report.', error: error.message }, { status: 500 });
+	}
 
-    await connectDataBase();
+	let incomeTotal = 0;
+	let expenseTotal = 0;
+	const categoryTotals = new Map<string, { type: 'IN' | 'OUT'; category: string; total: number; count: number }>();
+	const dailyTotals = new Map<number, { income: number; expense: number }>();
 
-    const { year, month } = getTargetMonth(url.searchParams);
-    const startDate = new Date(year, month - 1, 1, 0, 0, 0, 0);
-    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+	for (const transaction of transactions ?? []) {
+		const isIncome = BUDGET_CATEGORIES_INCOME.includes(transaction.category as never);
+		const isExpense = BUDGET_CATEGORIES_EXPENSE.includes(transaction.category as never);
+		if (!isIncome && !isExpense) continue;
 
-    const [result]: MonthlyReportAggregation[] = await Transaction.aggregate([
-      {
-        $match: {
-          userId: hashUserId(userId),
-          date: { $gte: startDate, $lte: endDate },
-        },
-      },
-      {
-        $facet: {
-          summary: [
-            {
-              $group: {
-                _id: null,
-                totalIncome: {
-                  $sum: { $cond: [{ $eq: ["$type", "IN"] }, "$amount", 0] },
-                },
-                totalExpense: {
-                  $sum: { $cond: [{ $eq: ["$type", "OUT"] }, "$amount", 0] },
-                },
-              },
-            },
-          ],
-          categories: [
-            {
-              $group: {
-                _id: { type: "$type", category: "$category" },
-                total: { $sum: "$amount" },
-                count: { $sum: 1 },
-              },
-            },
-            { $sort: { total: -1 } },
-          ],
-          daily: [
-            {
-              $group: {
-                _id: { $dayOfMonth: "$date" },
-                income: {
-                  $sum: { $cond: [{ $eq: ["$type", "IN"] }, "$amount", 0] },
-                },
-                expense: {
-                  $sum: { $cond: [{ $eq: ["$type", "OUT"] }, "$amount", 0] },
-                },
-              },
-            },
-            { $sort: { _id: 1 } },
-          ],
-        },
-      },
-    ]);
+		const type = isIncome ? 'IN' : 'OUT';
+		const amount = Number(transaction.amount);
+		const day = new Date(transaction.created_at).getDate();
+		if (isIncome) incomeTotal += amount;
+		else expenseTotal += amount;
 
-    const summaryRaw = result?.summary?.[0];
-    const incomeTotal = summaryRaw?.totalIncome ?? 0;
-    const expenseTotal = summaryRaw?.totalExpense ?? 0;
+		const categoryKey = `${type}:${transaction.category}`;
+		const currentCategory = categoryTotals.get(categoryKey) ?? {
+			type,
+			category: transaction.category,
+			total: 0,
+			count: 0,
+		};
+		currentCategory.total += amount;
+		currentCategory.count += 1;
+		categoryTotals.set(categoryKey, currentCategory);
 
-    const expenses: CategoryBreakdownItem<ExpenseCategory>[] = [];
-    const income: CategoryBreakdownItem<IncomeCategory>[] = [];
-    const dailyByDay = new Map(
-      (result?.daily ?? []).map((item) => [item._id, item]),
-    );
-    const daysInMonth = new Date(year, month, 0).getDate();
-    const timeline = Array.from({ length: daysInMonth }, (_, index) => {
-      const day = index + 1;
-      const totals = dailyByDay.get(day);
-      return {
-        day,
-        income: totals?.income ?? 0,
-        expense: totals?.expense ?? 0,
-      };
-    });
+		const currentDay = dailyTotals.get(day) ?? { income: 0, expense: 0 };
+		if (isIncome) currentDay.income += amount;
+		else currentDay.expense += amount;
+		dailyTotals.set(day, currentDay);
+	}
 
-    for (const item of result?.categories ?? []) {
-      const { type, category } = item._id;
-      const total = item.total;
-      const count = item.count;
+	const expenses: CategoryBreakdownItem<ExpenseCategory>[] = [];
+	const income: CategoryBreakdownItem<IncomeCategory>[] = [];
+	for (const item of categoryTotals.values()) {
+		if (item.type === 'IN') {
+			income.push({
+				category: item.category as IncomeCategory,
+				total: item.total,
+				count: item.count,
+				percentage: incomeTotal > 0 ? Number(((item.total / incomeTotal) * 100).toFixed(1)) : 0,
+			});
+		} else {
+			expenses.push({
+				category: item.category as ExpenseCategory,
+				total: item.total,
+				count: item.count,
+				percentage: expenseTotal > 0 ? Number(((item.total / expenseTotal) * 100).toFixed(1)) : 0,
+			});
+		}
+	}
+	expenses.sort((left, right) => right.total - left.total);
+	income.sort((left, right) => right.total - left.total);
 
-      if (type === "OUT") {
-        const percentage =expenseTotal > 0 ? Number(((total / expenseTotal) * 100).toFixed(1)) : 0;
-        expenses.push({
-          category: category as ExpenseCategory,
-          total,
-          count,
-          percentage,
-        });
-      } else if (type === "IN") {
-        const percentage =
-          incomeTotal > 0 ? Number(((total / incomeTotal) * 100).toFixed(1)) : 0;
-        income.push({
-          category: category as IncomeCategory,
-          total,
-          count,
-          percentage,
-        });
-      }
-    }
-
-    const responseBody: MonthlyReportResponse = {
-      message: "Success retrieving monthly report.",
-      data: {
-        year,
-        month,
-        timeline,
-        summary: {
-          total: incomeTotal - expenseTotal,
-          income: incomeTotal,
-          expense: expenseTotal,
-        },
-        categories: {
-          expenses,
-          income,
-        },
-      },
-    };
-
-    return json(responseBody);
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
-    return json(
-      { message: "An error occurred on the server.", error: errorMessage },
-      { status: 500 },
-    );
-  }
+	const daysInMonth = new Date(year, month, 0).getDate();
+	const timeline = Array.from({ length: daysInMonth }, (_, index) => {
+		const day = index + 1;
+		const totals = dailyTotals.get(day);
+		return { day, income: totals?.income ?? 0, expense: totals?.expense ?? 0 };
+	});
+	const responseBody: MonthlyReportResponse = {
+		message: 'Success retrieving monthly report.',
+		data: {
+			year,
+			month,
+			timeline,
+			summary: {
+				total: incomeTotal - expenseTotal,
+				income: incomeTotal,
+				expense: expenseTotal,
+			},
+			categories: { expenses, income },
+		},
+	};
+	return json(responseBody);
 };

@@ -9,7 +9,7 @@
   const dispatch = createEventDispatcher<{ pageChange: number }>();
 
   const btnClass =
-    "w-10 h-10 flex justify-center items-center border-none bg-transparent rounded-md cursor-pointer text-zinc-900 dark:text-zinc-100 transition-colors duration-150 hover:bg-zinc-900/8 disabled:opacity-35 disabled:cursor-not-allowed";
+    "motion-tap w-10 h-10 flex justify-center items-center border-none bg-transparent rounded-md cursor-pointer text-zinc-900 dark:text-zinc-100 transition-colors duration-150 hover:bg-zinc-900/8 disabled:opacity-35 disabled:cursor-not-allowed";
 </script>
 
 <div class="flex flex-row items-center justify-center gap-2">

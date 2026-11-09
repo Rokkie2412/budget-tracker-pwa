@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { get } from "svelte/store";
+  import { slide } from "svelte/transition";
 
   import { goto } from "$app/navigation";
 
@@ -40,6 +41,7 @@
   let loadError = $state("");
   let transactionError = $state("");
   let deletingTransactionId = $state<string | null>(null);
+  let expandedCategoryGroups = $state<Record<string, boolean>>({});
   let reportRequestSequence = 0;
   let transactionRequestSequence = 0;
   let observedTransactionRevision = $transactionRevision;
@@ -221,7 +223,7 @@
 </script>
 
 <main
-  class="mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-5 pb-4"
+  class="motion-page mx-auto flex h-[calc(100dvh-6rem)] min-h-0 w-full max-w-md flex-col overflow-hidden px-4 pt-[calc(1.25rem+env(safe-area-inset-top))] pb-4"
 >
   <section class="flex min-h-0 w-full flex-1 flex-col gap-4">
     <header
@@ -261,11 +263,27 @@
     >
       {#if isLoading}
         <div
-          class="flex min-h-48 items-center justify-center"
+          class="space-y-5"
           role="status"
           aria-label={t("transactionsLoading", $language)}
         >
-          <span class="size-8 animate-spin rounded-full border-2 border-emerald-700 border-r-transparent" aria-hidden="true"></span>
+          <section class="motion-card space-y-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900" aria-hidden="true">
+            <span class="motion-skeleton block h-3 w-24 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+            <span class="motion-skeleton block h-7 w-2/3 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+            <div class="grid grid-cols-2 gap-4 border-t border-zinc-100 pt-3 dark:border-zinc-700">
+              <span class="motion-skeleton h-12 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+              <span class="motion-skeleton h-12 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+            </div>
+          </section>
+          <section class="motion-card space-y-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900" aria-hidden="true">
+            <span class="motion-skeleton block h-4 w-40 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+            <span class="motion-skeleton block aspect-[1.9/1] w-full rounded-lg bg-zinc-200 dark:bg-zinc-700"></span>
+          </section>
+          <section class="motion-card space-y-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900" aria-hidden="true">
+            <span class="motion-skeleton block h-4 w-36 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+            <span class="motion-skeleton block h-10 w-full rounded-md bg-zinc-200 dark:bg-zinc-700"></span>
+            <span class="motion-skeleton block h-10 w-full rounded-md bg-zinc-200 dark:bg-zinc-700"></span>
+          </section>
         </div>
       {:else if loadError}
         <div
@@ -359,6 +377,8 @@
                 {/each}
                 <polyline
                   points={chartGeometry.incomePoints}
+                  pathLength="1"
+                  class="motion-chart-line"
                   fill="none"
                   stroke="#10b981"
                   stroke-width="2.25"
@@ -367,6 +387,8 @@
                 />
                 <polyline
                   points={chartGeometry.expensePoints}
+                  pathLength="1"
+                  class="motion-chart-line motion-chart-line-expense"
                   fill="none"
                   stroke="#f87171"
                   stroke-width="2.25"
@@ -397,15 +419,41 @@
           <h2 class="text-base font-semibold text-zinc-900 dark:text-zinc-100">
             {t("dashboardCategoryBreakdown", $language)}
           </h2>
-          {#each [{ title: t("reportIncome", $language), items: report.categories.income, color: "text-emerald-700 dark:text-emerald-300" }, { title: t("reportExpenses", $language), items: report.categories.expenses, color: "text-rose-700 dark:text-rose-300" }] as group (group.title)}
-            <details
+          {#each [{ key: "income", title: t("reportIncome", $language), items: report.categories.income, color: "text-emerald-700 dark:text-emerald-300" }, { key: "expenses", title: t("reportExpenses", $language), items: report.categories.expenses, color: "text-rose-700 dark:text-rose-300" }] as group (group.key)}
+            <div
               class="rounded-md border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
             >
-              <summary
-                class="cursor-pointer px-3 py-2 text-sm font-medium"
-                >{group.title}</summary
+              <button
+                type="button"
+                class="motion-tap flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm font-medium"
+                aria-expanded={expandedCategoryGroups[group.key] ?? false}
+                aria-controls={`monthly-category-${group.key}`}
+                onclick={() => {
+                  expandedCategoryGroups[group.key] =
+                    !expandedCategoryGroups[group.key];
+                }}
               >
-              <ul class="divide-y divide-zinc-100 px-3 dark:divide-zinc-700">
+                {group.title}
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class:expanded={expandedCategoryGroups[group.key]}
+                  class="category-breakdown-chevron size-4 shrink-0"
+                >
+                  <path d="m5 7.5 5 5 5-5" />
+                </svg>
+              </button>
+              {#if expandedCategoryGroups[group.key]}
+              <ul
+                id={`monthly-category-${group.key}`}
+                class="divide-y divide-zinc-100 px-3 dark:divide-zinc-700"
+                transition:slide={{ duration: 220 }}
+              >
                 {#each group.items as item (item.category)}
                   <li
                     class="flex items-center justify-between gap-3 py-2 text-sm"
@@ -425,7 +473,8 @@
                   </li>
                 {/each}
               </ul>
-            </details>
+              {/if}
+            </div>
           {/each}
         </section>
 
@@ -440,12 +489,20 @@
           </header>
           {#if transactionLoading}
             <div
-              class="flex min-h-32 items-center justify-center"
+              class="space-y-2 py-2"
               role="status"
               aria-label={t("transactionsLoading", $language)}
             >
-              <span class="size-6 animate-spin rounded-full border-2 border-emerald-700 border-r-transparent"
-              ></span>
+              {#each [0, 1, 2] as row (row)}
+                <div class="flex items-center gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700" aria-hidden="true">
+                  <span class="motion-skeleton size-10 shrink-0 rounded-full bg-zinc-200 dark:bg-zinc-700"></span>
+                  <span class="flex-1 space-y-2">
+                    <span class="motion-skeleton block h-3 w-2/3 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+                    <span class="motion-skeleton block h-3 w-1/3 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+                  </span>
+                  <span class="motion-skeleton h-4 w-16 rounded bg-zinc-200 dark:bg-zinc-700"></span>
+                </div>
+              {/each}
             </div>
           {:else if transactionError}
             <div
@@ -462,8 +519,11 @@
             </div>
           {:else if transactions.length > 0}
             <ul class="divide-y divide-zinc-100 dark:divide-zinc-700">
-              {#each transactions as transaction (transaction._id)}
-                <li class="py-1">
+              {#each transactions as transaction, index (transaction._id)}
+                <li
+                  class="motion-list-item py-1"
+                  style={`--motion-index: ${Math.min(index, 8)}`}
+                >
                   <TransactionCard
                     title={transaction.description}
                     date={formatDate(transaction.date)}

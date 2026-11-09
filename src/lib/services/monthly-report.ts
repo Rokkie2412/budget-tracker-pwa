@@ -11,13 +11,13 @@ export const fetchMonthlyReport = async (
   if (!authData) throw new Error(t("invalidCredentials"));
 
   const params = new URLSearchParams({
-    userId: authData.phoneNumber,
+    userId: authData.userId,
     year: String(year),
     month: String(month),
   });
   const response = await fetch(`${apiBaseUrl}/api/monthly-report?${params}`, {
     headers: {
-      Authorization: `Bearer ${authData.jwtToken}`,
+      Authorization: `Bearer ${authData.accessToken}`,
     },
   });
   const result = (await response.json()) as MonthlyReportResponse;

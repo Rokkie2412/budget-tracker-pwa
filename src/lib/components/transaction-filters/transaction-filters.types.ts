@@ -18,5 +18,7 @@ export type TransactionFiltersState = {
 
 export type Props = {
   filters: TransactionFiltersState;
+  hasExternalFilter?: boolean;
+  onClear?: () => void;
   onChange: (filters: TransactionFiltersState) => void;
 };

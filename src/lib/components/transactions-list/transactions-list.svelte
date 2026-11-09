@@ -18,7 +18,7 @@
 
 <article class="w-full border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900">
   <div class="flex items-center justify-between gap-3 px-3 py-2.5">
-    <div class="flex min-w-0 items-center gap-1 sm:gap-4">
+    <div class="flex min-w-0 flex-1 items-center gap-1 sm:gap-4">
       <div class="min-w-0">
         <h2 class="truncate text-base font-semibold text-zinc-800 dark:text-zinc-200">
           {title}
@@ -44,7 +44,7 @@
       <div class="shrink-0">
         <button
           type="button"
-          class="grid size-9 place-items-center rounded-lg text-zinc-500 transition-colors hover:bg-rose-50 hover:text-rose-700 dark:text-zinc-400 dark:hover:bg-rose-950 dark:hover:text-rose-300"
+          class="motion-tap grid size-9 place-items-center rounded-lg text-zinc-500 transition-colors hover:bg-rose-50 hover:text-rose-700 dark:text-zinc-400 dark:hover:bg-rose-950 dark:hover:text-rose-300"
           aria-label={t(isDeleting ? "deletingTransaction" : "deleteTransaction", $language).replace("{title}", title)}
           disabled={isDeleting}
           onclick={onDelete}

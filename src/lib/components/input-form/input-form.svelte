@@ -25,6 +25,7 @@
 		label,
 		name,
 		placeholder = "",
+		inputType: inputTypeProp = "text",
 		showPasswordToggle = false,
 		showNumberDropdown = false,
 	}: Props = $props();
@@ -42,7 +43,7 @@
 				: "password"
 			: showNumberDropdown
 				? "tel"
-				: "text",
+				: inputTypeProp,
 	);
 
 	function closeCountryDialog() {
@@ -102,7 +103,7 @@
 			{name}
 			type={inputType}
 			inputmode={showNumberDropdown ? "tel" : undefined}
-			autocomplete={showNumberDropdown ? "tel-national" : "current-password"}
+			autocomplete={showNumberDropdown ? "tel-national" : name === "email" ? "email" : "current-password"}
 			{placeholder}
 			required
 			class="min-w-0 grow bg-transparent outline-none placeholder:text-zinc-400"

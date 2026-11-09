@@ -1,4 +1,7 @@
 export type AuthCredential = {
-  jwtToken: string;
-  phoneNumber: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: number;
+  userId: string;
+  email: string;
 };

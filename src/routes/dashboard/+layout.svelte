@@ -8,7 +8,7 @@
   let { children }: { children: Snippet } = $props();
 </script>
 
-<main class="pb-24">
+<main class="keyboard-adjustable-content pb-24">
   {@render children()}
 </main>
 
@@ -19,7 +19,7 @@
   <a
     href="/dashboard"
     aria-current={page.url.pathname === "/dashboard" ? "page" : undefined}
-    class={`flex flex-col items-center justify-center gap-1 text-xs ${page.url.pathname === "/dashboard" ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-400"}`}
+    class={`motion-nav-item motion-tap flex flex-col items-center justify-center gap-1 text-xs ${page.url.pathname === "/dashboard" ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-400"}`}
   >
     <svg
       aria-hidden="true"
@@ -44,7 +44,7 @@
     aria-current={page.url.pathname === "/dashboard/transactions"
       ? "page"
       : undefined}
-    class={`flex flex-col items-center justify-center gap-1 text-xs ${page.url.pathname === "/dashboard/transactions" ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-400"}`}
+    class={`motion-nav-item motion-tap flex flex-col items-center justify-center gap-1 text-xs ${page.url.pathname === "/dashboard/transactions" ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-400"}`}
   >
     <svg
       aria-hidden="true"
@@ -71,7 +71,7 @@
     aria-current={page.url.pathname === "/dashboard/reports"
       ? "page"
       : undefined}
-    class={`flex flex-col items-center justify-center gap-1 text-xs ${page.url.pathname === "/dashboard/reports" ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-400"}`}
+    class={`motion-nav-item motion-tap flex flex-col items-center justify-center gap-1 text-xs ${page.url.pathname === "/dashboard/reports" ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-400"}`}
   >
     <svg
       aria-hidden="true"
@@ -96,7 +96,7 @@
     aria-current={page.url.pathname === "/dashboard/profile"
       ? "page"
       : undefined}
-    class={`flex flex-col items-center justify-center gap-1 text-xs ${page.url.pathname === "/dashboard/profile" ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-400"}`}
+    class={`motion-nav-item motion-tap flex flex-col items-center justify-center gap-1 text-xs ${page.url.pathname === "/dashboard/profile" ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-400"}`}
   >
     <svg
       aria-hidden="true"

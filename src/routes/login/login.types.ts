@@ -4,8 +4,5 @@ export type ErrorCallAPiType = {
 
 export type LoginRes = {
   message: string,
-  token: string,
-  user: {
-    userId: string
-  }
+  credential: import('@/lib/services/auth.types').AuthCredential,
 }
